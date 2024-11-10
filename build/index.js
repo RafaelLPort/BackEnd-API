@@ -129,23 +129,31 @@ app.delete("/produtos/:produtoId", (req, res) => __awaiter(void 0, void 0, void 
         res.status(500).json({ message: 'Erro ao deletar produto', error: error.message });
     }
 }));
-app.patch('/produtos/:produtoId', (req, res) => {
+app.patch('/produtos/:produtoId', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { produtoId } = req.params;
         const { nome, preco, estoque } = req.body;
         if (!produtoId) {
-            throw new Error('Preencha o produtoId.');
+            res.status(400).json({ message: 'Preencha o produtoId.' });
         }
-        const produto = {};
+        const produto = yield (0, connection_1.default)('produto').where({ id_produto: produtoId }).first();
         if (!produto) {
-            throw new Error('Produto não encontrado.');
+            res.status(404).json({ message: 'Produto não encontrado.' });
         }
-        res.status(200).json({ message: 'Produto atualizado com sucesso', produto });
+        yield (0, connection_1.default)('produto')
+            .where({ id_produto: produtoId })
+            .update({
+            nome_produto: nome !== null && nome !== void 0 ? nome : produto.nome_produto,
+            preco_produto: preco !== null && preco !== void 0 ? preco : produto.preco_produto,
+            estoque_produto: estoque !== null && estoque !== void 0 ? estoque : produto.estoque_produto,
+        });
+        const produtoAtualizado = yield (0, connection_1.default)('produto').where({ id_produto: produtoId }).first();
+        res.status(200).json({ message: 'Produto atualizado com sucesso', produto: produtoAtualizado });
     }
     catch (error) {
         res.status(500).json({ message: 'Erro ao atualizar produto', error: error.message });
     }
-});
+}));
 app.get('/vendas/:vendaId/revisao', (req, res) => {
     try {
         const { vendaId } = req.params;

@@ -182,22 +182,36 @@ app.delete("/produtos/:produtoId", async (req: Request, res: Response) => {
 
 
 // PATCH - Atualiza campos específicos de um produto
-app.patch('/produtos/:produtoId', (req: Request, res: Response) => {
+app.patch('/produtos/:produtoId', async (req: Request, res: Response) => {
     try {
         const { produtoId } = req.params;
         const { nome, preco, estoque } = req.body;
 
+        //VERIFICAÇÃO SE PREENCHEU O ID DO PRODUTO
         if (!produtoId) {
-            throw new Error('Preencha o produtoId.');
+            res.status(400).json({ message: 'Preencha o produtoId.' });
         }
 
-        const produto = {}; // Simulação de busca do produto
+        //VERIFICAÇÃO SE O PRODUTO EXISTE
+        const produto = await connection('produto').where({ id_produto: produtoId }).first();
 
         if (!produto) {
-            throw new Error('Produto não encontrado.');
+            res.status(404).json({ message: 'Produto não encontrado.' });
         }
 
-        res.status(200).json({ message: 'Produto atualizado com sucesso', produto });
+        //ATUALIZAÇÃO DO PRODUTO
+        await connection('produto')
+            .where({ id_produto: produtoId })
+            .update({
+                nome_produto: nome ?? produto.nome_produto,
+                preco_produto: preco ?? produto.preco_produto,
+                estoque_produto: estoque ?? produto.estoque_produto,
+            });
+
+        //BUSCA DE PRODUTO COM A ATUALIZAÇÃO
+        const produtoAtualizado = await connection('produto').where({ id_produto: produtoId }).first();
+
+        res.status(200).json({ message: 'Produto atualizado com sucesso', produto: produtoAtualizado });
     } catch (error: any) {
         res.status(500).json({ message: 'Erro ao atualizar produto', error: error.message });
     }
