@@ -143,21 +143,43 @@ app.get('/produtos/:produtoId', async (req: Request, res: Response) => {
 });
 
 
-//FALTA INCREMENTAR NO BANCO DE DADOS
-
-//FALTA PAGINAR
+// QUANDO NAO TEM FILTRO ELE BUSCA TODOS OS PRODUTOS E QUANDO TEM FILTRO ELE BUSCA O PRODUTO ESPECIFICO - ADICIONAR VERIFICAÇÃO SE CAMPOS FORAM PREENCHIDOS?
 
 // GET - Busca produtos por nome e/ou categoria e ordenação
-app.get('/produtos', async (req: Request, res: Response) => {
+app.get('/produtoscomfiltro', async (req: Request, res: Response) => {
     try {
         const { nome_produto, categoria_produto, ordem } = req.query;
 
-        // Implementação de filtro e ordenação 
-        res.status(200).json({ message: 'Produtos encontrados', produtos: [] });
+        let query = connection('produto');
+
+        //FILTRAGEM POR NOME
+        if (nome_produto) {
+            query = query.where('nome_produto', 'ilike', `%${nome_produto}%`);
+        }
+
+        //FILTRAGEM POR CATEGORIA
+        if (categoria_produto) {
+            query = query.where('categoria_produto', 'ilike', `%${categoria_produto}%`);
+        }
+
+        // FILTRAGEM ASC OU DESC
+        if (ordem) {
+            //VALIDAÇÃO 'ASC' OU 'DESC'
+            const direcaoValida = ['asc', 'desc'].includes((ordem as string).toLowerCase()) ? (ordem as string).toLowerCase() : 'asc';
+
+            //APKLICA A ORDENAÇÃO
+            query = query.orderBy('nome_produto', direcaoValida);
+        }
+
+        //FAZ A CONSULTA NO BD
+        const produtos = await query;
+
+        //RETORNO DOS RESULTADOS FILTRADOS
+        res.status(200).json({ message: 'Produtos encontrados', produtos });
     } catch (error: any) {
         res.status(500).json({ message: 'Erro ao buscar os produtos', error: error.message });
-    }    
-}); 
+    }
+});
 
 
 // DELETE - Deleta produto por ID

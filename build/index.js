@@ -106,10 +106,22 @@ app.get('/produtos/:produtoId', (req, res) => __awaiter(void 0, void 0, void 0, 
         res.status(500).json({ message: 'Erro ao buscar produto!', error: error.message });
     }
 }));
-app.get('/produtos', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.get('/produtoscomfiltro', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { nome_produto, categoria_produto, ordem } = req.query;
-        res.status(200).json({ message: 'Produtos encontrados', produtos: [] });
+        let query = (0, connection_1.default)('produto');
+        if (nome_produto) {
+            query = query.where('nome_produto', 'ilike', `%${nome_produto}%`);
+        }
+        if (categoria_produto) {
+            query = query.where('categoria_produto', 'ilike', `%${categoria_produto}%`);
+        }
+        if (ordem) {
+            const direcaoValida = ['asc', 'desc'].includes(ordem.toLowerCase()) ? ordem.toLowerCase() : 'asc';
+            query = query.orderBy('nome_produto', direcaoValida);
+        }
+        const produtos = yield query;
+        res.status(200).json({ message: 'Produtos encontrados', produtos });
     }
     catch (error) {
         res.status(500).json({ message: 'Erro ao buscar os produtos', error: error.message });
