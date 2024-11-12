@@ -18,6 +18,7 @@ app.post("/cliente", async(req: Request, res: Response) => {
 
         //VERIFICA SE OS CAMPOS FORAM PREENCHIDOS
         if (!nome_cliente || !senha_cliente || !email_cliente) {
+            res.status(409)
             throw new Error('Preencha todos os campos.');
         }
 
@@ -52,6 +53,7 @@ app.get('/cliente/infoCliente/:id_cliente', async (req: Request, res: Response) 
 
         //VERIFICAÇÃO DO ID FORNECIDO
         if (!id_cliente) {
+            res.status(409)
             throw new Error('ID do cliente é obrigatório.');
         }
 
@@ -60,14 +62,15 @@ app.get('/cliente/infoCliente/:id_cliente', async (req: Request, res: Response) 
 
         //VERIFICA SE A ID EXISTE
         if (!cliente) {
+            res.status(404)
             throw new Error('Cliente não encontrado.');
         }
 
         // RETORNA AS INFOS PARA A TELA
         res.status(200).json({ message: 'Informações do cliente', cliente });
     } catch (error: any) {
-        // QUALQUER ERRO TRATADO
-        res.status(500).json({ message: 'Erro ao buscar informações do cliente', error: error.message });
+        const message = error.sqlMessage || error.message || 'Erro ao buscar informações do cliente!'
+        res.json(message);
     }
 });
 
@@ -82,11 +85,13 @@ app.post('/produto', async (req: Request, res: Response) => {
 
         //VERIFICA SE TODOS OS CAMPOS FORAM PREENCHIDOS
         if (!nome_produto || !desc_produto || !preco_produto || !categoria_produto || !estoque_produto) {
+            res.status(409)
             throw new Error('Preencha todos os campos.');
         }
 
         //VERIFICAÇÃO SE É NUMERO NOS CAMPOS DE PREÇO E ESTOQUE
         if (typeof preco_produto !== 'number' || typeof estoque_produto !== 'number') {
+            res.status(400)
             throw new Error('preco_produto e estoque_produto devem ser números.');
         }
 
@@ -102,8 +107,10 @@ app.post('/produto', async (req: Request, res: Response) => {
         });
 
         res.status(201).json({ message: 'Produto adicionado com sucesso', produto: { id_produto, nome_produto, desc_produto, preco_produto, categoria_produto, estoque_produto } });
+
     } catch (error: any) {
-        res.status(500).json({ message: 'Erro ao adicionar produto', error: error.message });
+        const message = error.sqlMessage || error.message || 'Erro ao adicionar novo produto!'
+        res.json(message);
     }
 });
 
@@ -116,8 +123,10 @@ app.get('/produtos', async (req: Request, res: Response) => {
 
         //CABEÇALHO DA MENSAGEM DE RETORNO DOS PRODUTOS
         res.status(200).json({ message: 'Todos os produtos', produtos });
+        
     } catch (error: any) {
-        res.status(500).json({ message: 'Erro ao buscar todos os produtos', error: error.message });
+        const message = error.sqlMessage || error.message || 'Erro ao buscar os produtos!'
+        res.json(message);
     }
 });
 
@@ -132,13 +141,15 @@ app.get('/produtos/:produtoId', async (req: Request, res: Response) => {
 
         // VERIFICAÇÃO SE O PRODUTO FOI ACHADO
         if (!produto) {
+            res.status(404)
             throw new Error('Produto não encontrado.');
         }
 
         //CABEÇALHO DO RETORNO E OS PRODUTOS
         res.status(200).json({ message: 'Produto encontrado', produto });
     } catch (error: any) {
-        res.status(500).json({ message: 'Erro ao buscar produto!', error: error.message });
+        const message = error.sqlMessage || error.message || 'Erro ao buscar ID do produto!'
+        res.json(message);
     }    
 });
 
@@ -150,36 +161,45 @@ app.get('/produtoscomfiltro', async (req: Request, res: Response) => {
     try {
         const { nome_produto, categoria_produto, ordem } = req.query;
 
-        let query = connection('produto');
+        // Inicializa a consulta no banco de dados
+        let query = connection('produto'); // Removido o 'await' daqui
 
-        //FILTRAGEM POR NOME
+        // FILTRAGEM POR NOME
         if (nome_produto) {
             query = query.where('nome_produto', 'ilike', `%${nome_produto}%`);
         }
 
-        //FILTRAGEM POR CATEGORIA
+        // FILTRAGEM POR CATEGORIA
         if (categoria_produto) {
             query = query.where('categoria_produto', 'ilike', `%${categoria_produto}%`);
         }
 
         // FILTRAGEM ASC OU DESC
         if (ordem) {
-            //VALIDAÇÃO 'ASC' OU 'DESC'
+            // VALIDAÇÃO 'ASC' OU 'DESC'
             const direcaoValida = ['asc', 'desc'].includes((ordem as string).toLowerCase()) ? (ordem as string).toLowerCase() : 'asc';
 
-            //APKLICA A ORDENAÇÃO
+            // APLICA A ORDENAÇÃO
             query = query.orderBy('nome_produto', direcaoValida);
         }
 
-        //FAZ A CONSULTA NO BD
+        // Executa a consulta com o await
         const produtos = await query;
 
-        //RETORNO DOS RESULTADOS FILTRADOS
+        if (produtos.length === 0) {
+            res.status(404).json({ message: 'Nenhum produto encontrado com os filtros especificados.' });
+        }
+
+
+        // RETORNO DOS RESULTADOS FILTRADOS
         res.status(200).json({ message: 'Produtos encontrados', produtos });
     } catch (error: any) {
-        res.status(500).json({ message: 'Erro ao buscar os produtos', error: error.message });
+        const message = error.sqlMessage || error.message || 'Erro ao buscar produtos por nome e/ou categoria e ordenação!';
+        res.status(500).json({ message });
     }
 });
+
+
 
 
 // DELETE - Deleta produto por ID
@@ -190,7 +210,8 @@ app.delete("/produtos/:produtoId", async (req: Request, res: Response) => {
         // Verifica se o produto existe
         const produto = await connection('produto').where({ id_produto: produtoId });
         if (!produto) {
-            res.status(404).json({ message: 'Produto não encontrado.' });
+            res.status(404)
+            throw new Error('Produto não encontrado.');
         }
 
         // Deleta o produto do banco de dados
@@ -198,7 +219,8 @@ app.delete("/produtos/:produtoId", async (req: Request, res: Response) => {
 
         res.status(200).json({ message: 'Produto deletado com sucesso', produtoId });
     } catch (error: any) {
-        res.status(500).json({ message: 'Erro ao deletar produto', error: error.message });
+        const message = error.sqlMessage || error.message || 'Erro ao deletar o produto por ID!'
+        res.json(message);
     }
 });
 
@@ -211,14 +233,16 @@ app.patch('/produtos/:produtoId', async (req: Request, res: Response) => {
 
         //VERIFICAÇÃO SE PREENCHEU O ID DO PRODUTO
         if (!produtoId) {
-            res.status(400).json({ message: 'Preencha o produtoId.' });
+            res.status(409)
+            throw new Error('Preencha o ID do produto.');
         }
 
         //VERIFICAÇÃO SE O PRODUTO EXISTE
         const produto = await connection('produto').where({ id_produto: produtoId }).first();
 
         if (!produto) {
-            res.status(404).json({ message: 'Produto não encontrado.' });
+            res.status(404)
+            throw new Error('Produto não encontrado.');
         }
 
         //ATUALIZAÇÃO DO PRODUTO
@@ -235,7 +259,8 @@ app.patch('/produtos/:produtoId', async (req: Request, res: Response) => {
 
         res.status(200).json({ message: 'Produto atualizado com sucesso', produto: produtoAtualizado });
     } catch (error: any) {
-        res.status(500).json({ message: 'Erro ao atualizar produto', error: error.message });
+        const message = error.sqlMessage || error.message || 'Erro ao atualizar campos específicos de um produto!'
+        res.json(message);
     }
 });
 
@@ -251,12 +276,14 @@ app.get('/vendas/:vendaId/revisao', (req: Request, res: Response) => {
         const venda = {}; // Simulação de busca da venda
 
         if (!venda) {
+            res.status(404)
             throw new Error('Venda não encontrada.');
         }
 
         res.status(200).json({ message: 'Revisão da venda', detalhes: venda });
     } catch (error: any) {
-        res.status(500).json({ message: 'Erro ao buscar detalhes da venda', error: error.message });
+        const message = error.sqlMessage || error.message || 'Erro ao retornar detalhes da venda!'
+        res.json(message);
     }
 });
 
@@ -270,13 +297,15 @@ app.put('/vendas/:vendaId/endereco', (req: Request, res: Response) => {
         const venda = {}; // Simulação de busca da venda
 
         if (!venda) {
+            res.status(404)
             throw new Error('Venda não encontrada.');
         }
 
 
         res.status(200).json({ message: 'Endereço atualizado', venda });
     } catch (error: any) {
-        res.status(500).json({ message: 'Erro ao atualizar endereço', error: error.message });
+        const message = error.sqlMessage || error.message || 'Erro ao criar cliente!'
+        res.json(message);
     }
 });
 
