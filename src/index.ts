@@ -17,16 +17,27 @@ app.post("/cliente", async(req: Request, res: Response) => {
         const { nome_cliente, senha_cliente, email_cliente} = req.body;
 
         //VERIFICA SE OS CAMPOS FORAM PREENCHIDOS
-        if (!nome_cliente || !senha_cliente || !email_cliente) {
-            res.status(409)
-            throw new Error('Preencha todos os campos.');
+        if(!nome_cliente){
+            res.status(400)
+            throw new Error('Campo "Nome" obrigatório, favor preenchê-lo')
         }
+
+        if(!senha_cliente){
+            res.status(400)
+            throw new Error('Campo "Senha" obrigatório, favor preenchê-lo')
+        }
+
+        if(!email_cliente){
+            res.status(400)
+            throw new Error('Campo "E-mail" obrigatório, favor preenchê-lo')
+        }
+
 
         //VERIFICAÇÃO SE CLIENTE JÁ EXISTE
         const existingCliente = await connection('cliente').where({ email_cliente });
-        if (existingCliente) {
-            res.status(401)
-            throw new Error('Cliente já existe.');
+        if (existingCliente.length > 0) {
+            res.status(409)
+            throw new Error('E-mail já cadastrado.');
         }
 
         //CRIAÇÃO DO CLIENTE INSERÇÃO NO BD
@@ -46,7 +57,7 @@ app.post("/cliente", async(req: Request, res: Response) => {
 });
 
 
-// GET - Busca as informações de um cliente
+// GET - Busca as informações de um cliente - TRATAMENTO DE ERRO NAO FUNCIONA :/
 app.get('/cliente/infoCliente/:id_cliente', async (req: Request, res: Response) => {
     try {
         const { id_cliente } = req.params;
