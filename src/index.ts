@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
-import { v7 as uuidv7 } from 'uuid';
+import { v7 as uuidv7, validate } from 'uuid';
 import connection from './config/connection';
 
 const app = express();
@@ -69,6 +69,11 @@ app.get('/cliente/infoCliente/:id_cliente', async (req: Request, res: Response) 
         }
 
        //BUSCA NO BD
+       const validateUUID = validate(id_cliente);
+       if(!validateUUID){
+        res.status(400)
+        throw new Error("ID não encontrado, digite um ID válido.")
+       }
         const cliente = await connection('cliente').where({ id_cliente });
 
         //VERIFICA SE A ID EXISTE
@@ -173,7 +178,7 @@ app.get('/produtoscomfiltro', async (req: Request, res: Response) => {
         const { nome_produto, categoria_produto, ordem } = req.query;
 
         // Inicializa a consulta no banco de dados
-        let query = connection('produto'); // Removido o 'await' daqui
+        let query = connection('produto');
 
         // FILTRAGEM POR NOME
         if (nome_produto) {
@@ -194,7 +199,7 @@ app.get('/produtoscomfiltro', async (req: Request, res: Response) => {
             query = query.orderBy('nome_produto', direcaoValida);
         }
 
-        // Executa a consulta com o await
+        
         const produtos = await query;
 
         if (produtos.length === 0) {

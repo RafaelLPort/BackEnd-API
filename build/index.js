@@ -60,6 +60,11 @@ app.get('/cliente/infoCliente/:id_cliente', (req, res) => __awaiter(void 0, void
             res.status(409);
             throw new Error('ID do cliente é obrigatório.');
         }
+        const validateUUID = (0, uuid_1.validate)(id_cliente);
+        if (!validateUUID) {
+            res.status(400);
+            throw new Error("ID não encontrado, digite um ID válido.");
+        }
         const cliente = yield (0, connection_1.default)('cliente').where({ id_cliente });
         if (!cliente) {
             res.status(404);
@@ -68,7 +73,7 @@ app.get('/cliente/infoCliente/:id_cliente', (req, res) => __awaiter(void 0, void
         res.status(200).json({ message: 'Informações do cliente', cliente });
     }
     catch (error) {
-        const message = error.message || 'Erro ao buscar informações do cliente!';
+        const message = error.sqlMessage || error.message || 'Erro ao buscar informações do cliente!';
         res.json(message);
     }
 }));
