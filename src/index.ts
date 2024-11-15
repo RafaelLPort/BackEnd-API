@@ -88,7 +88,7 @@ app.post("/cliente", async(req: Request, res: Response) => {
 });
 
 
-// GET - Busca as informações de um cliente
+// GET - Busca as informações de um cliente pelo ID
 app.get('/cliente/infoCliente/:id_cliente', async (req: Request, res: Response) => {
     try {
         const { id_cliente } = req.params;
@@ -219,7 +219,12 @@ app.get('/produtos/:produtoId', async (req: Request, res: Response) => {
     try {
         const { produtoId } = req.params;
 
-        //CONSULTA NO BD
+        //CONSULTA NO BD COM A VALIDAÇÃO
+        const validateUUID = validate(produtoId);
+        if(!validateUUID){
+        res.status(400)
+        throw new Error("ID não encontrado, digite um ID válido.")
+       }
         const produto = await connection('produto').where({ id_produto: produtoId });
 
         // VERIFICAÇÃO SE O PRODUTO FOI ACHADO
@@ -257,6 +262,23 @@ app.get('/produtoscomfiltro', async (req: Request, res: Response) => {
             query = query.where('nome_produto', 'ilike', `%${nome_produto}%`);
         }
 
+        //VALIDAÇÃO SE CAMPO FOI PRENCHIDO SOMENTE COM A TECLA ESPAÇO
+        if (nome_produto && nome_produto.trim().length === 0) {
+            res.status(400);
+            throw new Error('O campo "nome_produto" não pode conter apenas espaços.');
+        }
+
+        if (categoria_produto && categoria_produto.trim().length === 0) {
+            res.status(400);
+            throw new Error('O campo "categoria_produto" não pode conter apenas espaços.');
+        }
+
+        if (ordem && ordem.trim().length === 0) {
+            res.status(400);
+            throw new Error('O campo "ordem" não pode conter apenas espaços.');
+        }
+
+
         // FILTRAGEM POR CATEGORIA - COM VERIFICAÇÃO PARA ACEITAR APENAS LETRAS
         if (categoria_produto) {
             const categoriaRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/;
@@ -266,8 +288,6 @@ app.get('/produtoscomfiltro', async (req: Request, res: Response) => {
             }
             query = query.where('categoria_produto', 'ilike', `%${categoria_produto}%`);
         }
-
-        
 
         // FILTRAGEM ASC OU DESC - COM VERIFICAÇÃO SE É 'ASC' OU 'DESC'
         if (ordem) {
@@ -281,14 +301,12 @@ app.get('/produtoscomfiltro', async (req: Request, res: Response) => {
             query = query.orderBy('nome_produto', ordemValida);
         }
 
-        
         const produtos = await query;
 
         if (produtos.length === 0) {
             res.status(404);
             throw new Error('Nenhum produto encontrado com os filtros especificados.');
         }
-
 
         // RETORNO DOS RESULTADOS FILTRADOS
         res.status(200).json({ message: 'Produtos encontrados', produtos });
@@ -307,7 +325,13 @@ app.delete("/produtos/:produtoId", async (req: Request, res: Response) => {
         const { produtoId } = req.params;
 
         // Verifica se o produto existe
-        const produto = await connection('produto').where({ id_produto: produtoId });
+        const validateUUID = validate(produtoId);
+        if(!validateUUID){
+        res.status(400)
+        throw new Error("ID não encontrado, digite um ID válido.")
+       }
+       
+        const produto = await connection('produto').where({ id_produto: produtoId }).first();
         if (!produto) {
             res.status(404)
             throw new Error('Produto não encontrado.');
@@ -336,7 +360,38 @@ app.patch('/produtos/:produtoId', async (req: Request, res: Response) => {
             throw new Error('Preencha o ID do produto.');
         }
 
-        //VERIFICAÇÃO SE O PRODUTO EXISTE
+        //VALIDAÇÃO SE CAMPO FOI PRENCHIDO SOMENTE COM A TECLA ESPAÇO
+        if (nome && nome.trim().length === 0) {
+            res.status(400);
+            throw new Error('O campo "nome_produto" não pode conter apenas espaços.');
+        }
+
+        // Verifica se o produto existe
+        const validateUUID = validate(produtoId);
+        if(!validateUUID){
+        res.status(400)
+        throw new Error("ID não encontrado, digite um ID válido.")
+       }
+
+        //VERIFICA SE O PREÇO É POSITIVO OU IGUAL A ZERO
+        if(preco &&(typeof preco !== 'number' || preco < 0)){
+            res.status(400);
+            throw new Error('O campo "preço" deve ser um número maior ou igual a zero.')
+        }
+
+        //VERIFICA SE O ESTOQUE É NUMERO INTEIRO OU MAIOR Q ZERO
+        if(estoque && (!Number.isInteger(estoque) || estoque < 0)){
+            res.status(400);
+            throw new Error('O campo "estoque" deve ser um número inteiro maior ou igual a zero.')
+        }
+
+        //VERIFICA SE PELO MENOS UM CAMPO FOI PREENCHIDO
+        if (!nome && preco && estoque === undefined) {
+            res.status(400);
+            throw new Error('Informe pelo menos um campo para atualizar.');
+        }
+        
+
         const produto = await connection('produto').where({ id_produto: produtoId }).first();
 
         if (!produto) {
