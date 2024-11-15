@@ -170,12 +170,16 @@ app.get('/produtos/:produtoId', async (req: Request, res: Response) => {
 });
 
 
-// QUANDO NAO TEM FILTRO ELE BUSCA TODOS OS PRODUTOS E QUANDO TEM FILTRO ELE BUSCA O PRODUTO ESPECIFICO - ADICIONAR VERIFICAÇÃO SE CAMPOS FORAM PREENCHIDOS?
-
 // GET - Busca produtos por nome e/ou categoria e ordenação
+//FAZER TRATAMENTO DE ERRO PARA BLOQUEAR INSERÇÃO DE NUMEROS ***** IMPORTANTE
 app.get('/produtoscomfiltro', async (req: Request, res: Response) => {
     try {
         const { nome_produto, categoria_produto, ordem } = req.query;
+
+        if (!nome_produto && !categoria_produto) {
+            res.status(400);
+            throw new Error('É necessário informar pelo menos o nome do produto ou a categoria.')
+        }
 
         // Inicializa a consulta no banco de dados
         let query = connection('produto');
@@ -191,7 +195,7 @@ app.get('/produtoscomfiltro', async (req: Request, res: Response) => {
         }
 
         // FILTRAGEM ASC OU DESC
-        if (ordem) {
+        if (typeof ordem === 'string') {
             // VALIDAÇÃO 'ASC' OU 'DESC'
             const direcaoValida = ['asc', 'desc'].includes((ordem as string).toLowerCase()) ? (ordem as string).toLowerCase() : 'asc';
 
