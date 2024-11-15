@@ -32,6 +32,37 @@ app.post("/cliente", async(req: Request, res: Response) => {
             throw new Error('Campo "E-mail" obrigatório, favor preenchê-lo')
         }
 
+        //LIMITAÇÃO DE CARACTERES NO NOME
+        if (nome_cliente.length < 2 || nome_cliente.length > 100) {
+            res.status(400);
+            throw new Error('O nome deve ter entre 2 e 100 caracteres.');
+        }
+
+        //VERIFICAÇÃO PARA NOME TER SOMENTE LETRAS
+        const nomeRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/;
+        if (!nomeRegex.test(nome_cliente)) {
+            res.status(400);
+            throw new Error('O campo "Nome" deve conter apenas letras.');
+        }
+
+        //VERIFICAÇÃO SE NOME CONTEM SOMENTE A TECLA ESPAÇO
+        if (!nome_cliente.trim()) {
+            res.status(400);
+            throw new Error('O campo "Nome" não pode conter apenas espaços.');
+        }
+
+        //VERIFICAÇÃO SE A SENHA TEM SÓ A TECLA ESPAÇO
+        if (!senha_cliente.trim()) {
+            res.status(400);
+            throw new Error('O campo "Senha" não pode conter apenas espaços.');
+        }
+
+        // VERIFICAÇÃO SE O E-MAIL É VÁLIDO
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email_cliente)) {
+            res.status(400);
+            throw new Error('O campo "E-mail" deve conter um endereço de e-mail válido.');
+        }
 
         //VERIFICAÇÃO SE CLIENTE JÁ EXISTE
         const existingCliente = await connection('cliente').where({ email_cliente });
@@ -57,14 +88,14 @@ app.post("/cliente", async(req: Request, res: Response) => {
 });
 
 
-// GET - Busca as informações de um cliente - TRATAMENTO DE ERRO NAO FUNCIONA :/
+// GET - Busca as informações de um cliente
 app.get('/cliente/infoCliente/:id_cliente', async (req: Request, res: Response) => {
     try {
         const { id_cliente } = req.params;
 
         //VERIFICAÇÃO DO ID FORNECIDO
         if (!id_cliente) {
-            res.status(409)
+            res.status(400)
             throw new Error('ID do cliente é obrigatório.');
         }
 
@@ -110,6 +141,42 @@ app.post('/produto', async (req: Request, res: Response) => {
             res.status(400)
             throw new Error('preco_produto e estoque_produto devem ser números.');
         }
+
+        //VERIFICAÇÃO SE NOME DO PRODUTO, CATEGORIA E DESCRIÇÃO TEM SOMENTE A TECLA ESPAÇO DIGITADA NO CAMPO
+        if (!nome_produto.trim()) {
+            res.status(400);
+            throw new Error('O campo "nome_produto" não pode conter apenas espaços.');
+        }
+
+        if (!categoria_produto.trim()) {
+            res.status(400);
+            throw new Error('O campo "categoria_produto" não pode conter apenas espaços.');
+        }
+
+        if (!desc_produto.trim()) {
+            res.status(400);
+            throw new Error('O campo "desc_produto" não pode conter apenas espaços.');
+        }
+
+        // VALIDAÇÃO DO FORMATO DA CATEGORIA
+        const categoriaRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/;
+        if (!categoriaRegex.test(categoria_produto)) {
+            res.status(400);
+            throw new Error('O campo "categoria_produto" deve conter apenas letras.');
+        }
+
+        // VALIDAÇÃO PARA PREÇO E ESTOQUE PARA QUE NAO ACEITE VALORES NEGATIVOS
+
+        if (preco_produto < 0) {
+            res.status(400);
+            throw new Error('O campo "preco_produto" não pode ser negativo.');
+        }
+        
+        if (!Number.isInteger(estoque_produto) || estoque_produto < 0) {
+            res.status(400);
+            throw new Error('O campo "estoque_produto" deve ser um número inteiro não negativo.');
+        }
+        
 
         //CRIAÇÃO DO PRODUTO
         const id_produto = uuidv7();
@@ -171,14 +238,15 @@ app.get('/produtos/:produtoId', async (req: Request, res: Response) => {
 
 
 // GET - Busca produtos por nome e/ou categoria e ordenação
-//FAZER TRATAMENTO DE ERRO PARA BLOQUEAR INSERÇÃO DE NUMEROS ***** IMPORTANTE
 app.get('/produtoscomfiltro', async (req: Request, res: Response) => {
     try {
-        const { nome_produto, categoria_produto, ordem } = req.query;
+        const nome_produto = req.query.nome_produto as string | undefined;
+        const categoria_produto = req.query.categoria_produto as string | undefined;
+        const ordem = req.query.ordem as string | undefined;
 
-        if (!nome_produto && !categoria_produto) {
+        if (!nome_produto && !categoria_produto && !ordem) {
             res.status(400);
-            throw new Error('É necessário informar pelo menos o nome do produto ou a categoria.')
+            throw new Error('É necessário informar pelo menos o nome do produto, categoria ou ordem.')
         }
 
         // Inicializa a consulta no banco de dados
@@ -189,25 +257,36 @@ app.get('/produtoscomfiltro', async (req: Request, res: Response) => {
             query = query.where('nome_produto', 'ilike', `%${nome_produto}%`);
         }
 
-        // FILTRAGEM POR CATEGORIA
+        // FILTRAGEM POR CATEGORIA - COM VERIFICAÇÃO PARA ACEITAR APENAS LETRAS
         if (categoria_produto) {
+            const categoriaRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/;
+            if (!categoriaRegex.test(categoria_produto)) {
+                res.status(400);
+                throw new Error('O campo "Categoria" deve conter apenas letras.');
+            }
             query = query.where('categoria_produto', 'ilike', `%${categoria_produto}%`);
         }
 
-        // FILTRAGEM ASC OU DESC
-        if (typeof ordem === 'string') {
-            // VALIDAÇÃO 'ASC' OU 'DESC'
-            const direcaoValida = ['asc', 'desc'].includes((ordem as string).toLowerCase()) ? (ordem as string).toLowerCase() : 'asc';
+        
+
+        // FILTRAGEM ASC OU DESC - COM VERIFICAÇÃO SE É 'ASC' OU 'DESC'
+        if (ordem) {
+            const ordemValida = ordem.toLowerCase();
+            if (ordemValida !== 'asc' && ordemValida !== 'desc') {
+                res.status(400);
+                throw new Error('O campo "Ordem" aceita somente as palavras "asc" ou "desc".');
+            }
 
             // APLICA A ORDENAÇÃO
-            query = query.orderBy('nome_produto', direcaoValida);
+            query = query.orderBy('nome_produto', ordemValida);
         }
 
         
         const produtos = await query;
 
         if (produtos.length === 0) {
-            res.status(404).json({ message: 'Nenhum produto encontrado com os filtros especificados.' });
+            res.status(404);
+            throw new Error('Nenhum produto encontrado com os filtros especificados.');
         }
 
 
