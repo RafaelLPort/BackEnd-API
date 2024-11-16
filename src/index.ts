@@ -38,6 +38,11 @@ app.post("/cliente", async(req: Request, res: Response) => {
             throw new Error('O nome deve ter entre 2 e 100 caracteres.');
         }
 
+        if (senha_cliente.length < 8) {
+            res.status(400);
+            throw new Error('A senha deve conter pelo menos 8 caracteres');
+        }
+
         //VERIFICAÇÃO PARA NOME TER SOMENTE LETRAS
         const nomeRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/;
         if (!nomeRegex.test(nome_cliente)) {
@@ -136,6 +141,12 @@ app.post('/produto', async (req: Request, res: Response) => {
             throw new Error('Preencha todos os campos.');
         }
 
+        //LIMITAÇÃO DE CARACTERES NO NOME
+        if (nome_produto.length < 2 || nome_produto.length > 100) {
+            res.status(400);
+            throw new Error('O nome do produto deve ter entre 2 e 100 caracteres.');
+        }
+
         //VERIFICAÇÃO SE É NUMERO NOS CAMPOS DE PREÇO E ESTOQUE
         if (typeof preco_produto !== 'number' || typeof estoque_produto !== 'number') {
             res.status(400)
@@ -198,18 +209,50 @@ app.post('/produto', async (req: Request, res: Response) => {
 });
 
 
-// GET - Busca todos os produtos
+// GET - Busca todos os produtos com paginação
 app.get('/produtos', async (req: Request, res: Response) => {
     try {
-        //BUSCA DE TODOS OS PRODUTOS NO BD
-        const produtos = await connection('produto').select('*');
 
-        //CABEÇALHO DA MENSAGEM DE RETORNO DOS PRODUTOS
-        res.status(200).json({ message: 'Todos os produtos', produtos });
-        
-    } catch (error: any) {
-        const message = error.sqlMessage || error.message || 'Erro ao buscar os produtos!'
-        res.json(message);
+        const pagina = req.query.page ? parseInt(req.query.page as string, 10) : 1;
+        const quantidadePorPagina = 10; 
+
+        //VALIDAÇÃO PARA ACEITAR APENAS NUMEROS POSITIVOS
+        if (isNaN(pagina) || pagina < 1) {
+            res.status(400);
+            throw new Error('O campo "Page" deve ser preenchido com números positivos.')
+        }
+
+        //CÁLCULO DO OFFSET
+        const offset = quantidadePorPagina * (pagina - 1);
+
+        //TOTAL DE PRODUTOS PARA PAGINAÇÃO
+        const totalProdutos = await connection('produto').count('* as total').first();
+        const totalDeItens = totalProdutos?.total ? parseInt(totalProdutos.total as string, 10) : 0;
+        const totalDePaginas = Math.ceil(totalDeItens / quantidadePorPagina);
+
+        //CONSULTA NO BD COM LIMIT E OFFSET
+        const produtos = await connection('produto')
+            .select('*')
+            .limit(quantidadePorPagina)
+            .offset(offset);
+
+        //VERIFICAÇÃO SE HÁ RESULTADOS
+        if (!produtos.length) {
+            res.status(404);
+            throw new Error('Nenhum produto encontrado.')
+        }
+
+        //RETORNO COM A PAGINAÇÃO
+        res.status(200).json({
+            message: 'Lista de produtos',
+            pagina,
+            totalDePaginas,
+            totalDeItens,
+            produtos,
+        });
+    } catch (erro: any) {
+        const message = erro.sqlMessage || erro.message || 'Erro ao buscar os produtos!';
+        res.status(500).json({ message });
     }
 });
 
@@ -248,13 +291,22 @@ app.get('/produtoscomfiltro', async (req: Request, res: Response) => {
         const nome_produto = req.query.nome_produto as string | undefined;
         const categoria_produto = req.query.categoria_produto as string | undefined;
         const ordem = req.query.ordem as string | undefined;
+        const pagina = req.query.page ? parseInt(req.query.page as string, 10) : 1;
+        const quantidadePorPagina = 10;
 
+        //VALIDAÇÃO PARA ACEITAR APENAS NUMEROS POSITIVOS
+        if (isNaN(pagina) || pagina < 1) {
+            res.status(400);
+            throw new Error('O campo "Page" deve ser preenchido com números positivos.')
+        }
+
+        //VALIDAÇÃO PARA O USUARIO PREENCHER PELO MENOS UM DOS CAMPOS
         if (!nome_produto && !categoria_produto && !ordem) {
             res.status(400);
             throw new Error('É necessário informar pelo menos o nome do produto, categoria ou ordem.')
         }
 
-        // Inicializa a consulta no banco de dados
+        //CONECTA NO BD
         let query = connection('produto');
 
         // FILTRAGEM POR NOME
@@ -301,7 +353,12 @@ app.get('/produtoscomfiltro', async (req: Request, res: Response) => {
             query = query.orderBy('nome_produto', ordemValida);
         }
 
-        const produtos = await query;
+        const offset = quantidadePorPagina * (pagina - 1);
+        const totalProdutos = await query.clone().count('* as total').first();
+        const totalDeItens = totalProdutos?.total ? parseInt(totalProdutos.total as string, 10) : 0;
+        const totalDePaginas = Math.ceil(totalDeItens / quantidadePorPagina);
+
+        const produtos = await query.limit(quantidadePorPagina).offset(offset);
 
         if (produtos.length === 0) {
             res.status(404);
@@ -309,7 +366,13 @@ app.get('/produtoscomfiltro', async (req: Request, res: Response) => {
         }
 
         // RETORNO DOS RESULTADOS FILTRADOS
-        res.status(200).json({ message: 'Produtos encontrados', produtos });
+        res.status(200).json({
+            message: 'Produtos encontrados',
+            pagina,
+            totalDePaginas,
+            totalDeItens,
+            produtos,
+        });
     } catch (error: any) {
         const message = error.sqlMessage || error.message || 'Erro ao buscar produtos por nome e/ou categoria e ordenação!';
         res.status(500).json({ message });
