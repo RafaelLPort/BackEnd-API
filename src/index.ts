@@ -3,6 +3,8 @@ import cors from 'cors';
 import { v7 as uuidv7, validate } from 'uuid';
 import connection from './config/connection';
 import { generateId } from './middlewares/idGenerator';
+import { Produto } from './types/product';
+import { Cliente } from './types/user';
 
 const app = express();
 app.use(cors());
@@ -73,12 +75,16 @@ app.post("/cliente", async(req: Request, res: Response) => {
 
         //CRIAÇÃO DO CLIENTE INSERÇÃO NO BD
         const id_cliente = generateId();
-        await connection('cliente').insert({
+
+        const cliente: Cliente = {
             id_cliente,
             nome_cliente,
             senha_cliente,
-            email_cliente
-        });
+            email_cliente,
+            endereco_cliente: ''
+        };
+
+        await connection('cliente').insert(cliente);
 
         res.status(201).json({ message: 'Cliente criado com sucesso!', cliente: { id_cliente, nome_cliente, email_cliente } });
     } catch (error: any) {
@@ -186,14 +192,17 @@ app.post('/produto', async (req: Request, res: Response) => {
 
         //CRIAÇÃO DO PRODUTO
         const id_produto = generateId();
-        await connection('produto').insert({
+        const produto: Produto = {
             id_produto,
             nome_produto,
             desc_produto,
             preco_produto,
             categoria_produto,
-            estoque_produto
-        });
+            estoque_produto,
+        };
+
+        await connection('produto').insert(produto);
+
 
         res.status(201).json({ message: 'Produto adicionado com sucesso', produto: { id_produto, nome_produto, desc_produto, preco_produto, categoria_produto, estoque_produto } });
 
