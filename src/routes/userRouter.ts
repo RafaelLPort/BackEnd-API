@@ -8,3 +8,4 @@ const userController = new UserController();
 
 // Define a rota
 userRouter.post('/cliente', userController.createCliente);
+userRouter.get('/cliente/:id', userController.getInfoByClienteId);

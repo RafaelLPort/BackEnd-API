@@ -10,4 +10,9 @@ export class UserData {
     public createCliente = async (cliente: Cliente): Promise<void> => {
         await connection('cliente').insert(cliente);
     };
+
+    public getClienteById = async (id_cliente: string): Promise<Cliente | null> => {
+        const result = await connection('cliente').where({ id_cliente }).first();
+        return result || null;
+    };
 }

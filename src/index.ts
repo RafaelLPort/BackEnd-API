@@ -13,85 +13,85 @@ app.use(express.json());
 
 // CLIENTE
 
-// POST - Cria novo cliente
-app.post("/cliente", async(req: Request, res: Response) => {
-    try {
-        const { nome_cliente, senha_cliente, email_cliente} = req.body;
+// // POST - Cria novo cliente
+// app.post("/cliente", async(req: Request, res: Response) => {
+//     try {
+//         const { nome_cliente, senha_cliente, email_cliente} = req.body;
 
-        //VERIFICA SE OS CAMPOS FORAM PREENCHIDOS
-        if(!nome_cliente){
-            res.status(400)
-            throw new Error('Campo "Nome" obrigatório, favor preenchê-lo')
-        }
+//         //VERIFICA SE OS CAMPOS FORAM PREENCHIDOS
+//         if(!nome_cliente){
+//             res.status(400)
+//             throw new Error('Campo "Nome" obrigatório, favor preenchê-lo')
+//         }
 
-        if(!senha_cliente){
-            res.status(400)
-            throw new Error('Campo "Senha" obrigatório, favor preenchê-lo')
-        }
+//         if(!senha_cliente){
+//             res.status(400)
+//             throw new Error('Campo "Senha" obrigatório, favor preenchê-lo')
+//         }
 
-        if(!email_cliente){
-            res.status(400)
-            throw new Error('Campo "E-mail" obrigatório, favor preenchê-lo')
-        }
+//         if(!email_cliente){
+//             res.status(400)
+//             throw new Error('Campo "E-mail" obrigatório, favor preenchê-lo')
+//         }
 
-        //LIMITAÇÃO DE CARACTERES NO NOME
-        if (nome_cliente.length < 2 || nome_cliente.length > 100) {
-            res.status(400);
-            throw new Error('O nome deve ter entre 2 e 100 caracteres.');
-        }
+//         //LIMITAÇÃO DE CARACTERES NO NOME
+//         if (nome_cliente.length < 2 || nome_cliente.length > 100) {
+//             res.status(400);
+//             throw new Error('O nome deve ter entre 2 e 100 caracteres.');
+//         }
 
-        //VERIFICAÇÃO PARA NOME TER SOMENTE LETRAS
-        const nomeRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/;
-        if (!nomeRegex.test(nome_cliente)) {
-            res.status(400);
-            throw new Error('O campo "Nome" deve conter apenas letras.');
-        }
+//         //VERIFICAÇÃO PARA NOME TER SOMENTE LETRAS
+//         const nomeRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/;
+//         if (!nomeRegex.test(nome_cliente)) {
+//             res.status(400);
+//             throw new Error('O campo "Nome" deve conter apenas letras.');
+//         }
 
-        //VERIFICAÇÃO SE NOME CONTEM SOMENTE A TECLA ESPAÇO
-        if (!nome_cliente.trim()) {
-            res.status(400);
-            throw new Error('O campo "Nome" não pode conter apenas espaços.');
-        }
+//         //VERIFICAÇÃO SE NOME CONTEM SOMENTE A TECLA ESPAÇO
+//         if (!nome_cliente.trim()) {
+//             res.status(400);
+//             throw new Error('O campo "Nome" não pode conter apenas espaços.');
+//         }
 
-        //VERIFICAÇÃO SE A SENHA TEM SÓ A TECLA ESPAÇO
-        if (!senha_cliente.trim()) {
-            res.status(400);
-            throw new Error('O campo "Senha" não pode conter apenas espaços.');
-        }
+//         //VERIFICAÇÃO SE A SENHA TEM SÓ A TECLA ESPAÇO
+//         if (!senha_cliente.trim()) {
+//             res.status(400);
+//             throw new Error('O campo "Senha" não pode conter apenas espaços.');
+//         }
 
-        // VERIFICAÇÃO SE O E-MAIL É VÁLIDO
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email_cliente)) {
-            res.status(400);
-            throw new Error('O campo "E-mail" deve conter um endereço de e-mail válido.');
-        }
+//         // VERIFICAÇÃO SE O E-MAIL É VÁLIDO
+//         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+//         if (!emailRegex.test(email_cliente)) {
+//             res.status(400);
+//             throw new Error('O campo "E-mail" deve conter um endereço de e-mail válido.');
+//         }
 
-        //VERIFICAÇÃO SE CLIENTE JÁ EXISTE
-        const existingCliente = await connection('cliente').where({ email_cliente });
-        if (existingCliente.length > 0) {
-            res.status(409)
-            throw new Error('E-mail já cadastrado.');
-        }
+//         //VERIFICAÇÃO SE CLIENTE JÁ EXISTE
+//         const existingCliente = await connection('cliente').where({ email_cliente });
+//         if (existingCliente.length > 0) {
+//             res.status(409)
+//             throw new Error('E-mail já cadastrado.');
+//         }
 
-        //CRIAÇÃO DO CLIENTE INSERÇÃO NO BD
-        const id_cliente = generateId();
+//         //CRIAÇÃO DO CLIENTE INSERÇÃO NO BD
+//         const id_cliente = generateId();
 
-        const cliente: Cliente = {
-            id_cliente,
-            nome_cliente,
-            senha_cliente,
-            email_cliente,
-            endereco_cliente: ''
-        };
+//         const cliente: Cliente = {
+//             id_cliente,
+//             nome_cliente,
+//             senha_cliente,
+//             email_cliente,
+//             endereco_cliente: ''
+//         };
 
-        await connection('cliente').insert(cliente);
+//         await connection('cliente').insert(cliente);
 
-        res.status(201).json({ message: 'Cliente criado com sucesso!', cliente: { id_cliente, nome_cliente, email_cliente } });
-    } catch (error: any) {
-        const message = error.sqlMessage || error.message || 'Erro ao criar cliente!'
-        res.json(message);
-    }
-});
+//         res.status(201).json({ message: 'Cliente criado com sucesso!', cliente: { id_cliente, nome_cliente, email_cliente } });
+//     } catch (error: any) {
+//         const message = error.sqlMessage || error.message || 'Erro ao criar cliente!'
+//         res.json(message);
+//     }
+// });
 
 
 // GET - Busca as informações de um cliente pelo ID
@@ -190,7 +190,7 @@ app.post('/produto', async (req: Request, res: Response) => {
         }
         
 
-        //CRIAÇÃO DO PRODUTO
+        // CRIAÇÃO DO PRODUTO
         const id_produto = generateId();
         const produto: Produto = {
             id_produto,
@@ -268,15 +268,7 @@ app.get('/produtoscomfiltro', async (req: Request, res: Response) => {
             res.status(400);
             throw new Error('É necessário informar pelo menos o nome do produto, categoria ou ordem.')
         }
-
-        // Inicializa a consulta no banco de dados
-        let query = connection('produto');
-
-        // FILTRAGEM POR NOME
-        if (nome_produto) {
-            query = query.where('nome_produto', 'ilike', `%${nome_produto}%`);
-        }
-
+        
         //VALIDAÇÃO SE CAMPO FOI PRENCHIDO SOMENTE COM A TECLA ESPAÇO
         if (nome_produto && nome_produto.trim().length === 0) {
             res.status(400);
@@ -292,6 +284,14 @@ app.get('/produtoscomfiltro', async (req: Request, res: Response) => {
             res.status(400);
             throw new Error('O campo "ordem" não pode conter apenas espaços.');
         }
+        // Inicializa a consulta no banco de dados
+        let query = connection('produto');
+
+        // FILTRAGEM POR NOME
+        if (nome_produto) {
+            query = query.where('nome_produto', 'ilike', `%${nome_produto}%`);
+        }
+
 
 
         // FILTRAGEM POR CATEGORIA - COM VERIFICAÇÃO PARA ACEITAR APENAS LETRAS

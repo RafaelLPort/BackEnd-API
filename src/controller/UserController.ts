@@ -1,10 +1,13 @@
 import { Request, Response } from 'express';
 import { UserBusiness } from '../business/UserBusiness';
+import { v7 as uuidv7, validate } from 'uuid';
+import connection from '../config/connection';
+
 
 export class UserController {
-    private userBusiness = new UserBusiness();
+    userBusiness = new UserBusiness();
 
-    public createCliente = async (req: Request, res: Response): Promise<void> => {
+    createCliente = async (req: Request, res: Response): Promise<void> => {
         try {
             const { nome_cliente, senha_cliente, email_cliente } = req.body;
 
@@ -17,4 +20,20 @@ export class UserController {
             res.status(400).json({ error: message });
         }
     };
+
+    getInfoByClienteId = async (req: Request, res: Response): Promise<void> => {
+        try {
+            const { id_cliente } = req.params; // Obtém o id_cliente da URL
+
+            // Chama a função de serviço para buscar o cliente
+            const cliente = await this.userBusiness.getClienteById(id_cliente);
+
+            // Retorna as informações do cliente
+             res.status(200).json({ message: 'Informações do cliente', cliente });
+        } catch (error: any) {
+            const message = error.message || 'Erro ao buscar informações do cliente!';
+             res.status(500).json({ message });
+        }
+    }
+
 }
