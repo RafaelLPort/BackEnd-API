@@ -15,4 +15,6 @@ export class UserData {
         const result = await connection('cliente').where({ id_cliente }).first();
         return result || null;
     };
+
+    
 }

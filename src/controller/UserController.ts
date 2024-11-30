@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import { UserBusiness } from '../business/UserBusiness';
-import { v7 as uuidv7, validate } from 'uuid';
-import connection from '../config/connection';
+
 
 
 export class UserController {
