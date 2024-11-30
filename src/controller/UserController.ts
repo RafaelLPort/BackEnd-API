@@ -35,4 +35,18 @@ export class UserController {
         }
     }
 
+    addressUpdate = async (req: Request, res: Response): Promise<void> => {
+        try {
+            const { id_cliente, address } = req.body;
+
+            // Chama a camada de negócios para criar o cliente
+            const newAddress = await this.userBusiness.addressUpdate( id_cliente, address );
+
+            res.status(201).json({ message: 'Address successfully updated!', newAddress });
+        } catch (error: any) {
+            const message = error.sqlMessage || error.message || 'Error updating the address!';
+            res.status(400).json({ error: message });
+        }
+    };
+
 }

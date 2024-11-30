@@ -1,7 +1,7 @@
 import { UserData } from "../data/UserData";
 import { generateId } from "../middlewares/idGenerator";
 import { Cliente } from "../types/user";
-import { v7 as uuidv7, validate } from 'uuid';
+import { validate } from 'uuid';
 
 export class UserBusiness {
     userData = new UserData();
@@ -85,7 +85,35 @@ export class UserBusiness {
         return cliente;
     };
 
+    addressUpdate = async (id_cliente: number, address: string) => {
+
+        // Verifica se os campos foram preenchidos
+        
+        if (!address) {
+            throw new Error('"Address" field is required, please fill it out.');
+        }
+        
+        if (address.length < 2 || address.length > 100) {
+            throw new Error('The address must be between 2 and 100 characters.');
+        }
+        
+        if (!id_cliente) {
+            throw new Error('The "id_cliente" field is required, please fill it out.');
+        }
+
+        // Verifica se o ID é válido
+        const validateUUID = validate(id_cliente);
+        if (!validateUUID) {
+            throw new Error('Invalid ID.');
+        }
+
+        // Atualiza no banco de dados
+        await this.userData.addressUpdate(id_cliente, address);
     
+        // Retorna os dados atualizados
+        return { id_cliente, address };
+        
+    };
 
 
 }
