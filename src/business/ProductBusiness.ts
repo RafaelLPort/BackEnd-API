@@ -191,6 +191,7 @@ export class ProdutoBusiness {
 
     //FAZ O UPDATE
     await this.ProdutoData.updateProduto(id_produto,nome_produto,preco_produto,desc_produto,categoria_produto,estoque_produto);
+
   };
 
 

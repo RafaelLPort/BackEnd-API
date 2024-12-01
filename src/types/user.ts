@@ -1,4 +1,3 @@
-
 export type Cliente = {
     id_cliente: string,
     nome_cliente: string,

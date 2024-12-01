@@ -47,6 +47,12 @@ export class ProductData {
         });
     };
 
+
+
+
+
+
+
     // Método para deletar um produto
     deleteProdutoById = async (id_produto: string): Promise<void> => {
         await connection('produto').where({ id_produto }).delete();

@@ -23,4 +23,19 @@ export class SaleController {
         }
     };
 
+    createReceipt = async (req: Request, res: Response): Promise<void> => {
+        try {
+            const { id_product, id_user, total_price } = req.body;
+
+            // Chama a camada de negócios para criar o Receipt
+            const Receipt = await this.saleBusiness.createReceipt( id_product, id_user, total_price );
+                
+
+            res.status(201).json({ message: 'Receipt adicionado com sucesso', Receipt });
+        } catch (error: any) {
+            const message = error.sqlMessage || error.message || 'Erro ao adicionar Receipt!';
+            res.status(400).json({ error: message });
+        }
+    };
+
 }

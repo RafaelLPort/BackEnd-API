@@ -1,4 +1,3 @@
-
 export type Produto = {
     id_produto: string,
     nome_produto: string,
