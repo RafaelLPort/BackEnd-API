@@ -1,263 +1,248 @@
 import { ProductData } from "../data/ProductData";
 import { generateId } from "../middlewares/idGenerator";
-import { Produto } from "../types/product";
-import { v7 as uuidv7, validate } from "uuid";
+import { Product } from "../types/product";
+import { validate } from "uuid";
 
-export class ProdutoBusiness {
-  ProdutoData = new ProductData();
+export class ProductBusiness {
+  ProductData = new ProductData();
 
+
+  // Cria Product
   createProduct = async (
-    nome_produto: string,
-    desc_produto: string,
-    preco_produto: number,
-    categoria_produto: string,
-    estoque_produto: number
+    name_product: string,
+    desc_product: string,
+    price_product: number,
+    category_product: string,
+    stock_product: number
   ) => {
     //VERIFICA SE TODOS OS CAMPOS FORAM PREENCHIDOS
     if (
-      !nome_produto ||
-      !desc_produto ||
-      !preco_produto ||
-      !categoria_produto ||
-      !estoque_produto
+      !name_product ||
+      !desc_product ||
+      !price_product ||
+      !category_product ||
+      !stock_product
     ) {
-      throw new Error("Preencha todos os campos.");
+      throw new Error("Fill in all the fields.");
     }
 
     //LIMITAÇÃO DE CARACTERES NO NOME
-    if (nome_produto.length < 2 || nome_produto.length > 100) {
-      throw new Error("O nome do produto deve ter entre 2 e 100 caracteres.");
+    if (name_product.length < 2 || name_product.length > 100) {
+      throw new Error("The product name must be between 2 and 100 characters.");
     }
 
     //VERIFICAÇÃO SE É NUMERO NOS CAMPOS DE PREÇO E ESTOQUE
     if (
-      typeof preco_produto !== "number" ||
-      typeof estoque_produto !== "number"
+      typeof price_product !== "number" ||
+      typeof stock_product !== "number"
     ) {
-      throw new Error("preco_produto e estoque_produto devem ser números.");
+      throw new Error("price_product and stock_product must be numbers.");
     }
 
-    //VERIFICAÇÃO SE NOME DO PRODUTO, CATEGORIA E DESCRIÇÃO TEM SOMENTE A TECLA ESPAÇO DIGITADA NO CAMPO
-    if (!nome_produto.trim()) {
-      throw new Error('O campo "nome_produto" não pode conter apenas espaços.');
+    //VERIFICAÇÃO SE NOME DO Product, CATEGORIA E DESCRIÇÃO TEM SOMENTE A TECLA ESPAÇO DIGITADA NO CAMPO
+    if (!name_product.trim()) {
+      throw new Error('The "name_product" field cannot contain only spaces.');
     }
 
-    if (!categoria_produto.trim()) {
-      throw new Error(
-        'O campo "categoria_produto" não pode conter apenas espaços.'
-      );
+    if (!category_product.trim()) {
+      throw new Error( 'The "category_product" field must contain only letters.' );
     }
 
-    if (!desc_produto.trim()) {
-      throw new Error('O campo "desc_produto" não pode conter apenas espaços.');
+    if (!desc_product.trim()) {
+      throw new Error("The 'desc_product' field cannot contain only spaces.");
     }
 
     // VALIDAÇÃO DO FORMATO DA CATEGORIA
     const categoriaRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/;
-    if (!categoriaRegex.test(categoria_produto)) {
-      throw new Error('O campo "categoria_produto" deve conter apenas letras.');
+    if (!categoriaRegex.test(category_product)) {
+      throw new Error('The "category_product" field must contain only letters.');
     }
 
     // VALIDAÇÃO PARA PREÇO E ESTOQUE PARA QUE NAO ACEITE VALORES NEGATIVOS
 
-    if (preco_produto < 0) {
-      throw new Error('O campo "preco_produto" não pode ser negativo.');
+    if (price_product < 0) {
+      throw new Error('The "price_product" field cannot be negative.');
     }
 
-    if (!Number.isInteger(estoque_produto) || estoque_produto < 0) {
-      throw new Error(
-        'O campo "estoque_produto" deve ser um número inteiro não negativo.'
-      );
+    if (!Number.isInteger(stock_product) || stock_product < 0) {
+      throw new Error( 'The "stock_product" field must be a non-negative integer.' );
     }
 
-    const newProduct: Produto = {
-      id_produto: generateId(), // Ou use o id_produto se for gerado externamente
-      nome_produto,
-      desc_produto,
-      preco_produto,
-      categoria_produto,
-      estoque_produto,
+    const newProduct: Product = {
+      id_product: generateId(), // Ou use o id_product se for gerado externamente
+      name_product,
+      desc_product,
+      price_product,
+      category_product,
+      stock_product,
   };
 
-    await this.ProdutoData.createProduct(newProduct);
+    await this.ProductData.createProduct(newProduct);
   };
 
-  getAllProdutos = async (numPage: number, itemsPerPage: number) => {
+
+//Puxa todos os Products
+  getAllProducts = async (numPage: number, itemsPerPage: number) => {
     const offset = (numPage - 1) * itemsPerPage; // Calculando o offset
-    const produtos = await this.ProdutoData.getAllProdutos(offset, itemsPerPage);  // Passando 'offset' e 'itemsPerPage'
-    return produtos;
+    const Products = await this.ProductData.getAllProducts(offset, itemsPerPage);  // Passando 'offset' e 'itemsPerPage'
+    return Products;
   };
 
-  getProdutoById = async (produtoId: string) => {
+
+
+  getProductById = async (productId: string) => {
     //VERIFICAÇÃO DO ID FORNECIDO
-    if (!produtoId) {
-      throw new Error("ID do Produto é obrigatório.");
+
+    console.log(productId);
+
+    if (!productId) {
+      throw new Error( "Product ID is required." );
     }
 
     // Verifica se o ID é válido
-    const validateUUID = validate(produtoId);
+    const validateUUID = validate(productId);
     if (!validateUUID) {
-      throw new Error("ID inválido.");
+      throw new Error("Invalid ID.");
     }
 
-    // Busca o Produto no banco de dados
-    const Produto = await this.ProdutoData.getProdutoById(produtoId);
+    // Busca o Product no banco de dados
+    const Product = await this.ProductData.getProductById(productId);
 
-    // Verifica se o Produto foi encontrado
-    if (!Produto) {
-      throw new Error("Produto não encontrado.");
+    // Verifica se o Product foi encontrado
+    if (!Product) {
+      throw new Error(" Product not found. ");
     }
 
-    return Produto;
+    return Product;
   };
 
 
-
-
-
-  // alterar os tipos e os nomes abaixo
-
-  updateProduto = async (
-    id_produto: string,
-    nome_produto: string,
-    preco_produto: number,
-    desc_produto: string,
-    categoria_produto: string,
-    estoque_produto: number
+//atualiza os Products
+  updateProduct = async (
+    id_product: string,
+    name_product: string,
+    price_product: number,
+    desc_product: string,
+    category_product: string,
+    stock_product: number
   ) => {
 
     
     
-    //VERIFICAÇÃO SE PREENCHEU O ID DO PRODUTO
-    if (!id_produto) {
-      throw new Error("Preencha o ID do produto.");
+    //VERIFICAÇÃO SE PREENCHEU O ID DO Product
+    if (!id_product) {
+      throw new Error("Fill in the product ID.");
     }
 
-    // Verifica se o produto existe
-    const validateUUID = validate(id_produto);
+    // Verifica se o Product existe
+    const validateUUID = validate(id_product);
     if (!validateUUID) {
-      throw new Error("ID não encontrado, digite um ID válido.");
+      throw new Error("ID not found, please enter a valid ID.");
     }
 
     //VALIDAÇÃO SE OS CAMPOS FORAM PRENCHIDOS SOMENTE COM A TECLA ESPAÇO
 
-    if (nome_produto && nome_produto.trim().length === 0) {
-      throw new Error(
-        'O campo "nome_produto" não pode conter apenas espaços.'
-      );
+    if (name_product && name_product.trim().length === 0) {
+      throw new Error("The name_product field cannot contain only spaces.");
     }
 
-    if (desc_produto && desc_produto.trim().length === 0) {
-      throw new Error(
-        'O campo "desc_produto" não pode conter apenas espaços.'
-      );
+    if (desc_product && desc_product.trim().length === 0) {
+      throw new Error( "The desc_product field cannot contain only spaces." );
     }
 
-    if (categoria_produto && categoria_produto.trim().length === 0) {
-      throw new Error(
-        'O campo "categoria_produto" não pode conter apenas espaços.'
-      );
+    if (category_product && category_product.trim().length === 0) {
+      throw new Error( "The category_product field cannot contain only spaces." );
     }
   
 
     //VERIFICA SE O PREÇO É POSITIVO OU IGUAL A ZERO
     if (
-      preco_produto &&
-      (typeof preco_produto !== "number" || preco_produto < 0)
+      price_product &&
+      (typeof price_product !== "number" || price_product < 0)
     ) {
-      throw new Error(
-        'O campo "preço" deve ser um número maior ou igual a zero.'
-      );
+      throw new Error( "The price field must be a number greater than or equal to zero." );
     }
 
     //VERIFICA SE O ESTOQUE É NUMERO INTEIRO OU MAIOR Q ZERO
     if (
-      estoque_produto &&
-      (!Number.isInteger(estoque_produto) || estoque_produto < 0)
+      stock_product &&
+      (!Number.isInteger(stock_product) || stock_product < 0)
     ) {
-      throw new Error(
-        'O campo "estoque_produto" deve ser um número inteiro maior ou igual a zero.'
-      );
+      throw new Error( "The stock_product field must be an integer greater than or equal to zero." );
     }
 
     //VERIFICA SE PELO MENOS UM CAMPO FOI PREENCHIDO
-    if (!nome_produto && preco_produto && estoque_produto === undefined) {
-      throw new Error("Informe pelo menos um campo para atualizar.");
+    if (!name_product && price_product && stock_product === undefined) {
+      throw new Error("Please provide at least one field to update.");
     }
 
-    //VERIFICA SE O PRODUTO EXISTE
-    const productVerification = await this.ProdutoData.getProdutoById(id_produto);
+    //VERIFICA SE O Product EXISTE
+    const productVerification = await this.ProductData.getProductById(id_product);
     
     if (!productVerification) {
-        throw new Error("Produto não encontrado.");
+        throw new Error( "Product not found." );
     }
 
 
     //FAZ O UPDATE
-    await this.ProdutoData.updateProduto(id_produto,nome_produto,preco_produto,desc_produto,categoria_produto,estoque_produto);
+    await this.ProductData.updateProduct(id_product,name_product,price_product,desc_product,category_product,stock_product);
 
   };
 
 
-
-  getProdutoWithFilter = async (nome_produto:string ,categoria_produto: string, ordem: string, numPage: number, itemsPerPage: number) => {
+//Puxa os Products com base nos filtros
+  getProductWithFilter = async (name_product:string ,category_product: string, Order: string, numPage: number, itemsPerPage: number) => {
     
-    if (!nome_produto && !categoria_produto && !ordem) {
-        throw new Error('É necessário informar pelo menos o nome do produto, categoria ou ordem.')
+    if (!name_product && !category_product && !Order) {
+        throw new Error("You must provide at least the product name, category, or order.")
     }
 
     //testar se 1 estiver escrito e algum outro tiver so com espaco ou vazio
 
     //VALIDAÇÃO SE CAMPO FOI PRENCHIDO SOMENTE COM A TECLA ESPAÇO
-    if (nome_produto && nome_produto.trim().length === 0) {
-        throw new Error('O campo "nome_produto" não pode conter apenas espaços.');
+    if (name_product && name_product.trim().length === 0) {
+        throw new Error( "The name_product field cannot contain only spaces.");
     }
 
-    if (categoria_produto && categoria_produto.trim().length === 0) {
-        throw new Error('O campo "categoria_produto" não pode conter apenas espaços.');
+    if (category_product && category_product.trim().length === 0) {
+        throw new Error("The category_product field cannot contain only spaces.");
     }
 
-    if (ordem && ordem.trim().length === 0) {
-        throw new Error('O campo "ordem" não pode conter apenas espaços.');
+    if (Order && Order.trim().length === 0) {
+        throw new Error( "The order field cannot contain only spaces.");
     }
 
-    console.log("NumPage: ", numPage);
 
-    // Busca o Produto no banco de dados
+    // Busca o Product no banco de dados
     const offset = (numPage - 1) * itemsPerPage; // Calculando o offset
-    const Produto = await this.ProdutoData.getProdutoWithFilter(offset, itemsPerPage, nome_produto, categoria_produto, ordem);
+    const Product = await this.ProductData.getProductWithFilter(offset, itemsPerPage, name_product, category_product, Order);
 
-    // Verifica se o Produto foi encontrado
-    if (!Produto) {
-      throw new Error("Produto não encontrado.");
+    // Verifica se o Product foi encontrado
+    if (!Product) {
+      throw new Error( "Product not found." );
     }
 
-    return Produto;
+    return Product;
   };
 
 
 
-
-
-  
-
-  // DELETAR PRODUTO POR ID
-
-  deleteProdutoById = async (id_Produto: string) => {
+  // DELETAR Product POR ID
+  deleteProductById = async (id_product: string) => {
     //VERIFICAÇÃO DO ID FORNECIDO
-    if (!id_Produto) {
-      throw new Error("ID do Produto é obrigatório.");
+    if (!id_product) {
+      throw new Error( "Product ID is required.");
     }
 
     // Verifica se o ID é válido
-    const validateUUID = validate(id_Produto);
+    const validateUUID = validate(id_product);
     if (!validateUUID) {
-      throw new Error("ID inválido.");
+      throw new Error("Invalid ID.");
     }
 
-    // deleta o Produto no banco de dados
-    await this.ProdutoData.deleteProdutoById(id_Produto);
+    // deleta o Product no banco de dados
+    await this.ProductData.deleteProductById(id_product);
 
-    // Verifica se o Produto foi encontrado
+    // Verifica se o Product foi encontrado
   };
 }

@@ -1,27 +1,27 @@
 import connection from '../config/connection';
-import { Cliente } from '../types/user';
+import { User } from '../types/user';
 
 export class UserData {
-    public getClienteByEmail = async (email_cliente: string): Promise<Cliente | null> => {
-        const result = await connection('cliente').where({ email_cliente }).first();
+    public getUserByEmail = async (email_user: string): Promise<User | null> => {
+        const result = await connection('customer').where({ email_user }).first();
         return result || null;
     };
 
-    public createCliente = async (cliente: Cliente): Promise<void> => {
-        await connection('cliente').insert(cliente);
+    public createUser = async (user: User): Promise<void> => {
+        await connection('customer').insert(user);
     };
 
-    public getClienteById = async (id_cliente: string): Promise<Cliente | null> => {
-        const result = await connection('cliente').where({ id_cliente }).first();
+    public getUserById = async (id_user: string): Promise<User | null> => {
+        const result = await connection('customer').where({ id_user }).first();
         return result || null;
     };
 
-    public addressUpdate = async (id_cliente: string, endereco_cliente: string): Promise<void> => {
+    public addressUpdate = async (id_user: string, address: string): Promise<void> => {
     
-        // Atualiza a tabela cliente com o endereço na coluna "address" associado ao "id_Cliente"
-        await connection('cliente')
-            .update({ endereco_cliente })
-            .where({ id_cliente });
+        // Atualiza a tabela User com o endereço na coluna "address" associado ao "id_User"
+        await connection('customer')
+            .update({ address })
+            .where({ id_user });
     };
     
 }

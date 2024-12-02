@@ -1,101 +1,101 @@
 import { UserData } from "../data/UserData";
 import { generateId } from "../middlewares/idGenerator";
-import { Cliente } from "../types/user";
+import { User } from "../types/user";
 import { validate } from 'uuid';
 import bcrypt from "bcryptjs";
 
 export class UserBusiness {
     userData = new UserData();
 
-    createCliente = async (nome_cliente: string, senha_cliente: string, email_cliente: string): Promise<Omit<Cliente, 'senha_cliente'>> => {
+    createUser = async (name_user: string, password_user: string, email_user: string): Promise<Omit<User, 'password_user'>> => {
         // Verifica se os campos foram preenchidos
-        if (!nome_cliente) {
-            throw new Error('Campo "Nome" obrigatório, favor a preenchê-lo');
+        if (!name_user) {
+            throw new Error( "Field 'Name' is required, please fill it in." );
         }
 
-        if (!senha_cliente) {
-            throw new Error('Campo "Senha" obrigatório, favor preenchê-lo');
+        if (!password_user) {
+            throw new Error("Field 'Password' is required, please fill it in.");
         }
 
-        if (!email_cliente) {
-            throw new Error('Campo "E-mail" obrigatório, favor preenchê-lo');
+        if (!email_user) {
+            throw new Error("Field 'email' is required, please fill it in.");
         }
 
         //LIMITAÇÃO DE CARACTERES NO NOME
-        if (nome_cliente.length < 2 || nome_cliente.length > 100) {
-            throw new Error('O nome deve ter entre 2 e 100 caracteres.');
+        if (name_user.length < 2 || name_user.length > 100) {
+            throw new Error("The name must be between 2 and 100 characters.");
         }
 
         //VERIFICAÇÃO PARA NOME TER SOMENTE LETRAS
         const nomeRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/;
-        if (!nomeRegex.test(nome_cliente)) {
-            throw new Error('O campo "Nome" deve conter apenas letras.');
+        if (!nomeRegex.test(name_user)) {
+            throw new Error("The 'Name' field must contain only letters.");
         }
 
         //VERIFICAÇÃO SE NOME CONTEM SOMENTE A TECLA ESPAÇO
-        if (!nome_cliente.trim()) {
-            throw new Error('O campo "Nome" não pode conter apenas espaços.');
+        if (!name_user.trim()) {
+            throw new Error("The 'Name' field cannot contain only spaces.");
         }
 
         //VERIFICAÇÃO SE A SENHA TEM SÓ A TECLA ESPAÇO
-        if (!senha_cliente.trim()) {
-            throw new Error('O campo "Senha" não pode conter apenas espaços.');
+        if (!password_user.trim()) {
+            throw new Error("The 'Password' field cannot contain only spaces.");
         }
 
         // VERIFICAÇÃO SE O E-MAIL É VÁLIDO
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email_cliente)) {
-            throw new Error('O campo "E-mail" deve conter um endereço de e-mail válido.');
+        if (!emailRegex.test(email_user)) {
+            throw new Error("The 'Email' field must contain a valid email address.");
         }
 
-        // Verifica se o cliente já existe
-        const existingCliente = await this.userData.getClienteByEmail(email_cliente);
-        if (existingCliente) {
-            throw new Error('E-mail já cadastrado.');
+        // Verifica se o User já existe
+        const existingUser = await this.userData.getUserByEmail(email_user);
+        if (existingUser) {
+            throw new Error("Email already registered.");
         }
 
-        const hashedPassword = await bcrypt.hash(senha_cliente, 10);
+        const hashedPassword = await bcrypt.hash(password_user, 10);
         
-        // Criação do cliente
-        const newUser: Cliente = {
-            id_cliente: generateId(),
-            nome_cliente,
-            email_cliente,
-            senha_cliente: hashedPassword
+        // Criação do User
+        const newUser: User = {
+            id_user: generateId(),
+            name_user,
+            email_user,
+            password_user: hashedPassword
         };
 
-        await this.userData.createCliente(newUser);
+        await this.userData.createUser(newUser);
 
 
-        // Retorna os dados do cliente (exceto a senha)
+        // Retorna os dados do User (exceto a senha)
         return newUser;
     };
 
-    getClienteById = async (id_cliente: string): Promise<Cliente | null> => {
+    getUserById = async (id_user: string): Promise<User | null> => {
 
         //VERIFICAÇÃO DO ID FORNECIDO
-        if (!id_cliente) {
-            throw new Error('ID do cliente é obrigatório.');
+        if (!id_user) {
+            throw new Error("User ID is required.");
         }
 
         // Verifica se o ID é válido
-        const validateUUID = validate(id_cliente);
+        const validateUUID = validate(id_user);
         if (!validateUUID) {
-            throw new Error('ID inválido.');
+            throw new Error("Invalid ID.");
         }
 
-        // Busca o cliente no banco de dados
-        const cliente = await this.userData.getClienteById(id_cliente);
+        // Busca o User no banco de dados
+        const User = await this.userData.getUserById(id_user);
 
-        // Verifica se o cliente foi encontrado
-        if (!cliente) {
-            throw new Error('Cliente não encontrado.');
+        // Verifica se o User foi encontrado
+        if (!User) {
+            throw new Error( "User not found.");
         }
 
-        return cliente;
+        return User;
     };
 
-    addressUpdate = async (id_cliente: string, address: string) => {
+    addressUpdate = async (id_user: string, address: string) => {
 
         // Verifica se os campos foram preenchidos
         
@@ -107,21 +107,21 @@ export class UserBusiness {
             throw new Error('The address must be between 2 and 100 characters.');
         }
         
-        if (!id_cliente) {
-            throw new Error('The "id_cliente" field is required, please fill it out.');
+        if (!id_user) {
+            throw new Error('The "id_user" field is required, please fill it out.');
         }
 
         // Verifica se o ID é válido
-        const validateUUID = validate(id_cliente);
+        const validateUUID = validate(id_user);
         if (!validateUUID) {
             throw new Error('Invalid ID.');
         }
 
         // Atualiza no banco de dados
-        await this.userData.addressUpdate(id_cliente, address);
+        await this.userData.addressUpdate(id_user, address);
     
         // Retorna os dados atualizados
-        return { id_cliente, address };
+        return { id_user, address };
         
     };
 

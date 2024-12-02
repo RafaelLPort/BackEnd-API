@@ -1,8 +1,8 @@
-export type Cliente = {
-    id_cliente: string,
-    nome_cliente: string,
-    senha_cliente: string,
-    email_cliente: string,
+export type User = {
+    id_user: string,
+    name_user: string,
+    password_user: string,
+    email_user: string,
     // endereco_cliente: string
 }
 

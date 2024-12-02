@@ -1,8 +1,8 @@
-export type Produto = {
-    id_produto: string,
-    nome_produto: string,
-    desc_produto: string,
-    preco_produto: number,
-    categoria_produto: string,
-    estoque_produto: number
+export type Product = {
+    id_product: string,
+    name_product: string,
+    desc_product: string,
+    price_product: number,
+    category_product: string,
+    stock_product: number
 }

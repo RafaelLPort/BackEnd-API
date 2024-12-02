@@ -1,54 +1,54 @@
 import connection from '../config/connection';
-import { Produto } from '../types/product';
+import { Product } from '../types/product';
 
 export class ProductData {
     
-    // Método para criar um novo produto
-    createProduct = async (produto: Produto): Promise<void> => {
-        await connection('produto').insert(produto);
+    // Método para criar um novo Product
+    createProduct = async (Product: Product): Promise<void> => {
+        await connection('product').insert(Product);
     };
     
-    // Método para buscar todos os produtos
-    getAllProdutos = async (offset: number, limit: number): Promise<Produto[]> => {
-        const produtos = await connection('produto')
+    // Método para buscar todos os Products
+    getAllProducts = async (offset: number, limit: number): Promise<Product[]> => {
+        const Products = await connection('product')
             .select('*')
             .limit(limit)  // Limitando os resultados
             .offset(offset);  // Definindo o deslocamento para a página correta
     
-        return produtos;
+        return Products;
     };
     
-    // Método para buscar um produto por ID
-    getProdutoById = async (id_produto: string): Promise<Produto | null> => {
-        const result = await connection('produto').where({ id_produto }).first();
+    // Método para buscar um Product por ID
+    getProductById = async (id_product: string): Promise<Product | null> => {
+        const result = await connection('product').where({ id_product }).first();
         return result || null;
     };
 
     //mudar os nomes
     
-    // Método para atualizar um produto
-    updateProduto = async (id_produto: string,
-        nome_produto: string,
-        preco_produto: number,
-        desc_produto: string,
-        categoria_produto: string,
-        estoque_produto: number) => {
+    // Método para atualizar um Product
+    updateProduct = async (id_product: string,
+        name_product: string,
+        price_product: number,
+        desc_product: string,
+        category_product: string,
+        stock_product: number) => {
 
-        const produto = await connection('produto').where({ id_produto: id_produto }).first();
+        const Product = await connection('product').where({ id_product: id_product }).first();
 
 
-        if (!produto) {
-            throw new Error('Produto não encontrado.');
+        if (!Product) {
+            throw new Error('Product not found.');
         }
 
-        await connection('produto')
-        .where({ id_produto: id_produto })
+        await connection('product')
+        .where({ id_product: id_product })
         .update({
-            nome_produto: nome_produto,
-            preco_produto: preco_produto,
-            desc_produto: desc_produto,
-            categoria_produto: categoria_produto,
-            estoque_produto: estoque_produto 
+            name_product: name_product,
+            price_product: price_product,
+            desc_product: desc_product,
+            category_product: category_product,
+            stock_product: stock_product 
         });
     };
 
@@ -58,9 +58,9 @@ export class ProductData {
 
 
 
-    // Método para deletar um produto
-    deleteProdutoById = async (id_produto: string): Promise<void> => {
-        await connection('produto').where({ id_produto }).delete();
+    // Método para deletar um Product
+    deleteProductById = async (id_product: string): Promise<void> => {
+        await connection('product').where({ id_product }).delete();
     };
 
 
@@ -68,30 +68,30 @@ export class ProductData {
 
     //testar para ver se o codigo funciona so com 1 filtro
 
-    // Método para buscar produtos com filtros (nome, categoria e ordem)
-    getProdutoWithFilter = async (offset: number, limit: number, nome_produto?: string, categoria_produto?: string, ordem?: string ): Promise<Produto[]> => {
-        let query = connection('produto');
+    // Método para buscar Products com filtros (nome, categoria e Order)
+    getProductWithFilter = async (offset: number, limit: number, name_product?: string, category_product?: string, Order?: string ): Promise<Product[]> => {
+        let query = connection('product');
 
         // Filtro por nome
-        if (nome_produto) {
-            query = query.where('nome_produto', 'ilike', `%${nome_produto}%`);
+        if (name_product) {
+            query = query.where('name_product', 'ilike', `%${name_product}%`);
         }
 
         // Filtro por categoria
-        if (categoria_produto) {
-            query = query.where('categoria_produto', 'ilike', `%${categoria_produto}%`);
+        if (category_product) {
+            query = query.where('category_product', 'ilike', `%${category_product}%`);
         }
 
         // Ordenação
-        if (ordem) {
-            query = query.orderBy('nome_produto', ordem.toLowerCase());
+        if (Order) {
+            query = query.orderBy('name_product', Order.toLowerCase());
         }
 
-        const produtos = await query
+        const Products = await query
         .select('*')  // Seleciona todas as colunas da tabela
         .limit(limit)  // Limitando os resultados
         .offset(offset);  // Definindo o deslocamento
 
-        return produtos;
+        return Products;
     };
 }

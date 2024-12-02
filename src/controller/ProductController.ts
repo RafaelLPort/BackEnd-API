@@ -1,161 +1,136 @@
 import { Request, Response } from 'express';
-import { ProdutoBusiness } from '../business/ProductBusiness';
-import { Produto } from '../types/product';
+import { ProductBusiness } from '../business/ProductBusiness';
+import { Product } from '../types/product';
 
 export class ProductController {
-    produtoBusiness = new ProdutoBusiness();
+    ProductBusiness = new ProductBusiness();
 
-    // Criar um novo produto
+    // Criar um novo Product
     createProduct = async (req: Request, res: Response): Promise<void> => {
         try {
-            const { nome_produto, desc_produto, preco_produto, categoria_produto, estoque_produto } = req.body;
+            const { name_product, desc_product, price_product, category_product, stock_product } = req.body;
 
-            // Chama a camada de negócios para criar o produto
-            const Produto = await this.produtoBusiness.createProduct(
-                nome_produto, 
-                desc_produto, 
-                preco_produto, 
-                categoria_produto, 
-                estoque_produto);
+            // Chama a camada de negócios para criar o Product
+            const Product = await this.ProductBusiness.createProduct(
+                name_product, 
+                desc_product, 
+                price_product, 
+                category_product, 
+                stock_product);
 
-            res.status(201).json({ message: 'Produto adicionado com sucesso', Produto });
+            res.status(201).json({ message: "Product added successfully.", Product });
         } catch (error: any) {
-            const message = error.sqlMessage || error.message || 'Erro ao adicionar produto!';
+            const message = error.sqlMessage || error.message || "Error adding product!";
             res.status(400).json({ error: message });
         }
     };
 
-    // Buscar todos os produtos
+    // Buscar todos os Products
     getAllProdutcs = async (req: Request, res: Response): Promise<void> => {
         try {
             let { page } = req.query; // Usando valor 1 como padrão para a página
             // Convertendo "page" para número
         const numPage = parseInt(page as string);
-
-            console.log("- ", req.params.page);
-            console.log("- ", numPage);
             
             if (isNaN(numPage) || numPage <= 0) {
-                res.status(400).json({ message: "O parâmetro 'page' deve ser um número válido e maior que zero." });
+                res.status(400).json({ message: "The 'page' parameter must be a valid number greater than zero." });
             }
 
             const itemsPerPage = 10; // Defina o número de itens por página
     
-            const produtos = await this.produtoBusiness.getAllProdutos(numPage, itemsPerPage);
+            const Products = await this.ProductBusiness.getAllProducts(numPage, itemsPerPage);
     
-            if (produtos.length === 0) {
-                res.status(404).json({ message: 'Nenhum produto encontrado' });
+            if (Products.length === 0) {
+                res.status(404).json({ message: "No product found." });
                 return;
             }
 
-            res.status(200).json({ message: 'Produtos encontrados', produtos });
+            res.status(200).json({ message: "Products found.", Products });
         } catch (error: any) {
-            const message = error.sqlMessage || error.message || 'Erro ao buscar os produtos!';
+            const message = error.sqlMessage || error.message || "Error fetching the products!";
             res.status(400).json({ error: message });
         }
     };
 
-    // Buscar um produto pelo ID
-    getProdutoById = async (req: Request, res: Response): Promise<void> => {
+    // Buscar um Product pelo ID
+    getProductById = async (req: Request, res: Response): Promise<void> => {
         try {
-            const { produtoId } = req.params;
+            const { productId } = req.params;
 
-            console.log("ProdutoId recebido:", req.params.produtoId);
+            const Product = await this.ProductBusiness.getProductById(productId);
 
-            const produto = await this.produtoBusiness.getProdutoById(produtoId);
-
-            if (!produto) {
-                res.status(404).json({ message: 'Produto não encontrado' });
+            if (!Product) {
+                res.status(404).json({ message: 'Product not found.' });
                 return;
             }
 
-            res.status(200).json({ message: 'Produto encontrado', produto });
+            res.status(200).json({ message: 'Product found.', Product });
         } catch (error: any) {
-            const message = error.sqlMessage || error.message || 'Erro ao buscar produto!';
+            const message = error.sqlMessage || error.message || 'Error fetching product!';
             res.status(400).json({ error: message });
         }
     };
 
-    // Atualizar um produto
-    updateProduto = async (req: Request, res: Response) => {
+    // Atualizar um Product
+    updateProduct = async (req: Request, res: Response) => {
         try {
-            const { produtoId } = req.params;
-            const { nome_produto, preco_produto, estoque_produto, desc_produto, categoria_produto } = req.body;
-            
-            console.log("- ", req.params.produtoId);
-            console.log("- ", req.body.nome_produto);
-            console.log("- ", req.body.preco_produto);
-            console.log("- ", req.body.desc_produto);
-            console.log("- ", req.body.estoque_produto);
+            const { productId } = req.params;
+            const { name_product, price_product, stock_product, desc_product, category_product } = req.body;
 
-            // Chama a camada de negócios para atualizar o produto
-            const produto = await this.produtoBusiness.updateProduto(produtoId,nome_produto,preco_produto,desc_produto,categoria_produto,estoque_produto);
+            // Chama a camada de negócios para atualizar o Product
+            const Product = await this.ProductBusiness.updateProduct(productId,name_product,price_product,desc_product,category_product,stock_product);
 
 
-            res.status(200).json({ message: 'Produto atualizado com sucesso', produto });
+            res.status(200).json({ message: 'Product updated successfully.', Product });
         } catch (error: any) {
-            const message = error.sqlMessage || error.message || 'Erro ao atualizar produto!';
+            const message = error.sqlMessage || error.message || 'Error updating product!';
             res.status(400).json({ error: message });
         }
     };
 
-    // Buscar um produto por filtro
+    // Buscar um Product por filtro
     getProductWithFilter = async (req: Request, res: Response): Promise<void> => {
         try {
-            const { nome_produto , categoria_produto, ordem, page } = req.query;
+            const { name_product , category_product, Order, page } = req.query;
 
-            const ordemProduto = (ordem as string);
-            const nomeProduto = (nome_produto as string);
-            const categoriaProduto = (categoria_produto as string);
+            const OrderProduct = (Order as string);
+            const nomeProduct = (name_product as string);
+            const categoriaProduct = (category_product as string);
             
-            // const ordemProduto = (req.query.ordem as string);
-
-            // console.log("nome - ", req.query.nome_produto);
-            // console.log("categoria - ", req.query.categoria_produto);
-            // console.log("ordem - ", req.query.ordem);
-
-            // console.log("----------------------------------------- V variaveis");
-
-            // console.log("nome - ", nomeProduto);
-            // console.log("categoria - ", categoriaProduto);
-            // console.log("ordem - ", ordemProduto);
 
             const numPage = parseInt(page as string);
 
-            // console.log("- ", req.query.page);
-            // console.log("- ", numPage);
-            
             if (isNaN(numPage) || numPage <= 0) {
-                res.status(400).json({ message: "O parâmetro 'page' deve ser um número válido e maior que zero." });
+                res.status(400).json({ message: "The 'page' parameter must be a valid number greater than zero." });
             }
 
 
             const itemsPerPage = 10;
 
-            const produto = await this.produtoBusiness.getProdutoWithFilter(nomeProduto, categoriaProduto, ordemProduto, numPage, itemsPerPage);
+            const Product = await this.ProductBusiness.getProductWithFilter(nomeProduct, categoriaProduct, OrderProduct, numPage, itemsPerPage);
 
-            if (!produto) {
-                res.status(404).json({ message: 'Produto não encontrado' });
+            if (!Product) {
+                res.status(404).json({ message: 'Product not found.' });
                 return;
             }
 
-            res.status(200).json({ message: 'Produto encontrado', produto });
+            res.status(200).json({ message: 'Product found.', Product });
         } catch (error: any) {
-            const message = error.sqlMessage || error.message || 'Erro ao buscar produto!';
+            const message = error.sqlMessage || error.message || 'Error fetching product!';
             res.status(400).json({ error: message });
         }
     };
 
-    // Deletar um produto pelo ID
-    deleteProduto = async (req: Request, res: Response): Promise<void> => {
+    // Deletar um Product pelo ID
+    deleteProduct = async (req: Request, res: Response): Promise<void> => {
         try {
-            const { produtoId } = req.params;
+            const { productId } = req.params;
 
-            await this.produtoBusiness.deleteProdutoById(produtoId);
+            await this.ProductBusiness.deleteProductById(productId);
 
-            res.status(200).json({ message: 'Produto deletado com sucesso' });
+            res.status(200).json({ message: 'Product deleted successfully.' });
         } catch (error: any) {
-            const message = error.sqlMessage || error.message || 'Erro ao deletar produto!';
+            const message = error.sqlMessage || error.message || 'Error deleting product!';
             res.status(400).json({ error: message });
         }
     };
