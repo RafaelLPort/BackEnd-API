@@ -28,8 +28,21 @@ export class ProductController {
     // Buscar todos os produtos
     getAllProdutcs = async (req: Request, res: Response): Promise<void> => {
         try {
-            const produtos = await this.produtoBusiness.getAllProdutos();
+            let { page } = req.query; // Usando valor 1 como padrão para a página
+            // Convertendo "page" para número
+        const numPage = parseInt(page as string);
 
+            console.log("- ", req.params.page);
+            console.log("- ", numPage);
+            
+            if (isNaN(numPage) || numPage <= 0) {
+                res.status(400).json({ message: "O parâmetro 'page' deve ser um número válido e maior que zero." });
+            }
+
+            const itemsPerPage = 10; // Defina o número de itens por página
+    
+            const produtos = await this.produtoBusiness.getAllProdutos(numPage, itemsPerPage);
+    
             if (produtos.length === 0) {
                 res.status(404).json({ message: 'Nenhum produto encontrado' });
                 return;

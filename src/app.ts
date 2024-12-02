@@ -9,7 +9,6 @@ export const app = express();
 app.use(express.json());
 app.use(cors());
 
-
-app.use("/Produto", ProductRouter);
-app.use("/users", userRouter);
-app.use("/sale", saleRouter);
+app.use(ProductRouter);
+app.use(userRouter);
+app.use(saleRouter);

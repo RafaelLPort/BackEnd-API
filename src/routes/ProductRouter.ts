@@ -14,7 +14,7 @@ const ProdutoController = new ProductController();
 
 // Define a rota
 ProductRouter.post('/produto', ProdutoController.createProduct);
-ProductRouter.get('/produto', ProdutoController.getAllProdutcs);
+ProductRouter.get('/produto/', ProdutoController.getAllProdutcs);
 ProductRouter.get('/produto/:produtoId', ProdutoController.getProdutoById);
 ProductRouter.delete('/produto/:produtoId', ProdutoController.deleteProduto);
 ProductRouter.patch('/produto/:produtoId', ProdutoController.updateProduto);

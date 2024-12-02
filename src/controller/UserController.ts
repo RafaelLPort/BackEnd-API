@@ -80,16 +80,23 @@ export class UserController {
         try {
             const { id_cliente } = req.params;
             const { address } = req.body;
-
+            const token = req.headers.authorization;
 
 
 
             console.log("ProdutoId recebido:", req.params.id_cliente);
             console.log("ProdutoId recebido:", req.body.address);
 
+            if (!token) {
+              throw new Error("Authorization token is required.");
+            }
 
-
-
+            const authenticator = new Authenticator();
+            const tokenData = authenticator.getTokenData(token);
+            
+            if (id_cliente !== tokenData.id) {
+              throw new Error("You are not authorized to delete this user.");
+            }
 
             // Chama a camada de negócios para criar o cliente
             const newAddress = await this.userBusiness.addressUpdate( id_cliente, address );

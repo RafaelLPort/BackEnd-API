@@ -9,8 +9,12 @@ export class ProductData {
     };
     
     // Método para buscar todos os produtos
-    getAllProdutos = async (): Promise<Produto[]> => {
-        const produtos = await connection('produto').select('*');
+    getAllProdutos = async (offset: number, limit: number): Promise<Produto[]> => {
+        const produtos = await connection('produto')
+            .select('*')
+            .limit(limit)  // Limitando os resultados
+            .offset(offset);  // Definindo o deslocamento para a página correta
+    
         return produtos;
     };
     
@@ -29,6 +33,7 @@ export class ProductData {
         desc_produto: string,
         categoria_produto: string,
         estoque_produto: number) => {
+
         const produto = await connection('produto').where({ id_produto: id_produto }).first();
 
 

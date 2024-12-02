@@ -82,10 +82,10 @@ export class ProdutoBusiness {
     await this.ProdutoData.createProduct(newProduct);
   };
 
-  getAllProdutos = async () => {
-    const Produtos = await this.ProdutoData.getAllProdutos();
-
-    return Produtos;
+  getAllProdutos = async (numPage: number, itemsPerPage: number) => {
+    const offset = (numPage - 1) * itemsPerPage; // Calculando o offset
+    const produtos = await this.ProdutoData.getAllProdutos(offset, itemsPerPage);  // Passando 'offset' e 'itemsPerPage'
+    return produtos;
   };
 
   getProdutoById = async (produtoId: string) => {
