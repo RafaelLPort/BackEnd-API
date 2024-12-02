@@ -2,6 +2,8 @@
 
 TechForge is a product, user, and sales management system developed with Node.js, Express, and PostgreSQL. The project is designed to provide a RESTful API to manage products, sales receipts, and user information with JWT authentication and password encryption.
 
+## Postman Documentation: https://documenter.getpostman.com/view/37745648/2sAYBYfW4J
+
 ## Features
 
 - **Product Management:**
