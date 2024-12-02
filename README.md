@@ -57,23 +57,12 @@ https://documenter.getpostman.com/view/37745648/2sAYBYfW4J
     npm install
     ```
 
-3. Create the `.env` file in the root of the project with the following environment variables:
+3. Create and configure the database:
 
-    ```env
-    DB_HOST=localhost
-    DB_USER=postgres
-    DB_PASSWORD=123
-    DB_NAME=BackEnd2
-    SECRET_KEY=3e8d4f8a14b5d9c3b3e2e073f85c6193a2d7b82e5f9b42465d722d3f858b9a7c
-    API_KEY=3e8d4f8a14b5d9c3b3e2e073f85c6193a2d7b82e5f9b42465d722d3f858b9a7c
-    ```
-
-4. Create and configure the database:
-
-    - Ensure the `BackEnd2` database is created in PostgreSQL.
+    - Ensure the `BackEnd` database is created in PostgreSQL.
     - Run migrations or scripts to create the tables (depending on your setup).
 
-5. Start the server:
+4. Start the server:
 
     ```bash
     npm start
