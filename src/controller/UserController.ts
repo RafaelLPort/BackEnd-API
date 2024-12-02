@@ -1,5 +1,8 @@
 import { Request, Response } from 'express';
 import { UserBusiness } from '../business/UserBusiness';
+import { Authenticator } from "../middlewares/authenticator";
+import connection from '../config/connection';
+import bcrypt from "bcryptjs";
 
 
 
@@ -20,9 +23,47 @@ export class UserController {
         }
     };
 
+    login = async (req: Request, res: Response): Promise<void> => {
+        try {
+          const { email_cliente, senha_cliente } = req.body;
+    
+          // if (!email || !/^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/.test(email)) {
+          //   throw new Error("Invalid email format.");
+          // }x
+    
+          const user = await connection("cliente").where("email_cliente", email_cliente).first();
+          if (!user) {
+            throw new Error("User not found.");
+          }
+    
+          const passwordMatch = await bcrypt.compare(senha_cliente, user.senha_cliente);
+          if (!passwordMatch) {
+            throw new Error("Invalid password.");
+          }
+    
+          const authenticator = new Authenticator();
+          const token = authenticator.generateToken({ id: user.id_user });
+    
+          res.status(200).json({ message: "Login successful", token });
+        } catch (error: any) {
+          res.status(400).json({ message: error.message });
+        }
+    }
+
+
+
     getInfoByClienteId = async (req: Request, res: Response): Promise<void> => {
         try {
             const { id_cliente } = req.params; // Obtém o id_cliente da URL
+
+
+
+
+            console.log("ProdutoId recebido:", req.params.id_cliente);
+
+
+
+
 
             // Chama a função de serviço para buscar o cliente
             const cliente = await this.userBusiness.getClienteById(id_cliente);
@@ -37,7 +78,18 @@ export class UserController {
 
     addressUpdate = async (req: Request, res: Response): Promise<void> => {
         try {
-            const { id_cliente, address } = req.body;
+            const { id_cliente } = req.params;
+            const { address } = req.body;
+
+
+
+
+            console.log("ProdutoId recebido:", req.params.id_cliente);
+            console.log("ProdutoId recebido:", req.body.address);
+
+
+
+
 
             // Chama a camada de negócios para criar o cliente
             const newAddress = await this.userBusiness.addressUpdate( id_cliente, address );

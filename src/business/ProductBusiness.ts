@@ -70,14 +70,16 @@ export class ProdutoBusiness {
       );
     }
 
-    await this.ProdutoData.createProduct({
+    const newProduct: Produto = {
       id_produto: generateId(), // Ou use o id_produto se for gerado externamente
       nome_produto,
       desc_produto,
       preco_produto,
       categoria_produto,
       estoque_produto,
-    });
+  };
+
+    await this.ProdutoData.createProduct(newProduct);
   };
 
   getAllProdutos = async () => {
@@ -86,20 +88,20 @@ export class ProdutoBusiness {
     return Produtos;
   };
 
-  getProdutoById = async (id_Produto: string) => {
+  getProdutoById = async (produtoId: string) => {
     //VERIFICAÇÃO DO ID FORNECIDO
-    if (!id_Produto) {
+    if (!produtoId) {
       throw new Error("ID do Produto é obrigatório.");
     }
 
     // Verifica se o ID é válido
-    const validateUUID = validate(id_Produto);
+    const validateUUID = validate(produtoId);
     if (!validateUUID) {
       throw new Error("ID inválido.");
     }
 
     // Busca o Produto no banco de dados
-    const Produto = await this.ProdutoData.getProdutoById(id_Produto);
+    const Produto = await this.ProdutoData.getProdutoById(produtoId);
 
     // Verifica se o Produto foi encontrado
     if (!Produto) {
@@ -118,11 +120,13 @@ export class ProdutoBusiness {
   updateProduto = async (
     id_produto: string,
     nome_produto: string,
-    desc_produto: string,
     preco_produto: number,
+    desc_produto: string,
     categoria_produto: string,
     estoque_produto: number
   ) => {
+
+    
     
     //VERIFICAÇÃO SE PREENCHEU O ID DO PRODUTO
     if (!id_produto) {

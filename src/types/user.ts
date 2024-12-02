@@ -3,7 +3,7 @@ export type Cliente = {
     nome_cliente: string,
     senha_cliente: string,
     email_cliente: string,
-    endereco_cliente: string
+    // endereco_cliente: string
 }
 
 export enum userRole{

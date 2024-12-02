@@ -47,6 +47,8 @@ export class ProductController {
         try {
             const { produtoId } = req.params;
 
+            console.log("ProdutoId recebido:", req.params.produtoId);
+
             const produto = await this.produtoBusiness.getProdutoById(produtoId);
 
             if (!produto) {
@@ -66,9 +68,16 @@ export class ProductController {
         try {
             const { produtoId } = req.params;
             const { nome_produto, preco_produto, estoque_produto, desc_produto, categoria_produto } = req.body;
+            
+            console.log("- ", req.params.produtoId);
+            console.log("- ", req.body.nome_produto);
+            console.log("- ", req.body.preco_produto);
+            console.log("- ", req.body.desc_produto);
+            console.log("- ", req.body.estoque_produto);
 
             // Chama a camada de negócios para atualizar o produto
-            const produto = await this.produtoBusiness.updateProduto(produtoId, nome_produto, preco_produto, desc_produto,  categoria_produto, estoque_produto);
+            const produto = await this.produtoBusiness.updateProduto(produtoId,nome_produto,preco_produto,desc_produto,categoria_produto,estoque_produto);
+
 
             res.status(200).json({ message: 'Produto atualizado com sucesso', produto });
         } catch (error: any) {

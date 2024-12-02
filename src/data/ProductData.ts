@@ -39,11 +39,11 @@ export class ProductData {
         await connection('produto')
         .where({ id_produto: id_produto })
         .update({
-            nome_produto: nome_produto ?? produto.nome_produto,
-            preco_produto: preco_produto ?? produto.preco_produto,
-            desc_produto: desc_produto ?? produto.desc_produto,
-            categoria_produto: categoria_produto ?? produto.categoria_produto,
-            estoque_produto: estoque_produto ?? produto.estoque_produto
+            nome_produto: nome_produto,
+            preco_produto: preco_produto,
+            desc_produto: desc_produto,
+            categoria_produto: categoria_produto,
+            estoque_produto: estoque_produto 
         });
     };
 

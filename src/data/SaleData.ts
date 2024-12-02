@@ -5,13 +5,13 @@ import { Produto } from '../types/product';
 
 export class SaleData {
     
-    public getReceiptById = async (ReceiptId: string) => {
-        const result = await connection('receipt').where({ ReceiptId }).first();
+    public getReceiptById = async (id_receipt: string) => {
+        const result = await connection('sale').where({ id_receipt }).first();
         return result || null;
     };
 
     public createReceipt = async (receipt: receipt): Promise<void> => {
-        await connection('receipt').insert(receipt);
+        await connection('sale').insert(receipt);
     };
 
 

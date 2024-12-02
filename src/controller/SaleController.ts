@@ -9,6 +9,8 @@ export class SaleController {
         try {
             const { ReceiptId } = req.params;
 
+            console.log("ProdutoId recebido:", req.params.ReceiptId);
+
             const Receipt = await this.saleBusiness.getReceiptById(ReceiptId);
 
             if (!Receipt) {
@@ -27,8 +29,12 @@ export class SaleController {
         try {
             const { id_product, id_user, total_price } = req.body;
 
+            console.log("ProdutoId recebido:", req.body.id_user);
+            console.log("ProdutoId recebido:", req.body.id_product);
+            console.log("ProdutoId recebido:", req.body.total_price);
+
             // Chama a camada de negócios para criar o Receipt
-            const Receipt = await this.saleBusiness.createReceipt( id_product, id_user, total_price );
+            const Receipt = await this.saleBusiness.createReceipt( id_product, id_user, total_price )
                 
 
             res.status(201).json({ message: 'Receipt adicionado com sucesso', Receipt });

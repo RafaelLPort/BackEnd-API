@@ -125,7 +125,7 @@ export class SaleBusiness {
         await this.SaleData.createReceipt({
           id_receipt: generateId(), // Ou use o id_produto se for gerado externamente
           id_product,
-          id_user ,
+          id_user,
           total_price
         });
       };

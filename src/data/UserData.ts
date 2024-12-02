@@ -16,11 +16,11 @@ export class UserData {
         return result || null;
     };
 
-    public addressUpdate = async (id_cliente: number, address: string): Promise<void> => {
+    public addressUpdate = async (id_cliente: string, endereco_cliente: string): Promise<void> => {
     
         // Atualiza a tabela cliente com o endereço na coluna "address" associado ao "id_Cliente"
         await connection('cliente')
-            .update({ address })
+            .update({ endereco_cliente })
             .where({ id_cliente });
     };
     

@@ -2,6 +2,7 @@ import { UserData } from "../data/UserData";
 import { generateId } from "../middlewares/idGenerator";
 import { Cliente } from "../types/user";
 import { validate } from 'uuid';
+import bcrypt from "bcryptjs";
 
 export class UserBusiness {
     userData = new UserData();
@@ -53,12 +54,21 @@ export class UserBusiness {
             throw new Error('E-mail já cadastrado.');
         }
 
+        const hashedPassword = await bcrypt.hash(senha_cliente, 10);
+        
         // Criação do cliente
-        const id_cliente = generateId(); // Substitui uuidv7
-        await this.userData.createCliente({ id_cliente, nome_cliente, senha_cliente, email_cliente, endereco_cliente: "" });
+        const newUser: Cliente = {
+            id_cliente: generateId(),
+            nome_cliente,
+            email_cliente,
+            senha_cliente: hashedPassword
+        };
+
+        await this.userData.createCliente(newUser);
+
 
         // Retorna os dados do cliente (exceto a senha)
-        return { id_cliente, nome_cliente, email_cliente, endereco_cliente: "" };
+        return newUser;
     };
 
     getClienteById = async (id_cliente: string): Promise<Cliente | null> => {
@@ -85,7 +95,7 @@ export class UserBusiness {
         return cliente;
     };
 
-    addressUpdate = async (id_cliente: number, address: string) => {
+    addressUpdate = async (id_cliente: string, address: string) => {
 
         // Verifica se os campos foram preenchidos
         
