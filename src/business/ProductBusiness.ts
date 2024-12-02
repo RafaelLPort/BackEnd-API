@@ -200,7 +200,7 @@ export class ProdutoBusiness {
 
 
 
-  getProdutoWithFilter = async (nome_produto:string ,categoria_produto: string, ordem: string) => {
+  getProdutoWithFilter = async (nome_produto:string ,categoria_produto: string, ordem: string, numPage: number, itemsPerPage: number) => {
     
     if (!nome_produto && !categoria_produto && !ordem) {
         throw new Error('É necessário informar pelo menos o nome do produto, categoria ou ordem.')
@@ -221,9 +221,11 @@ export class ProdutoBusiness {
         throw new Error('O campo "ordem" não pode conter apenas espaços.');
     }
 
+    console.log("NumPage: ", numPage);
 
     // Busca o Produto no banco de dados
-    const Produto = await this.ProdutoData.getProdutoWithFilter(nome_produto, categoria_produto, ordem);
+    const offset = (numPage - 1) * itemsPerPage; // Calculando o offset
+    const Produto = await this.ProdutoData.getProdutoWithFilter(offset, itemsPerPage, nome_produto, categoria_produto, ordem);
 
     // Verifica se o Produto foi encontrado
     if (!Produto) {

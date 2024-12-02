@@ -102,9 +102,37 @@ export class ProductController {
     // Buscar um produto por filtro
     getProductWithFilter = async (req: Request, res: Response): Promise<void> => {
         try {
-            const { nome_produto, categoria_produto, ordem } = req.body;
+            const { nome_produto , categoria_produto, ordem, page } = req.query;
 
-            const produto = await this.produtoBusiness.getProdutoWithFilter(nome_produto, categoria_produto, ordem);
+            const ordemProduto = (ordem as string);
+            const nomeProduto = (nome_produto as string);
+            const categoriaProduto = (categoria_produto as string);
+            
+            // const ordemProduto = (req.query.ordem as string);
+
+            // console.log("nome - ", req.query.nome_produto);
+            // console.log("categoria - ", req.query.categoria_produto);
+            // console.log("ordem - ", req.query.ordem);
+
+            // console.log("----------------------------------------- V variaveis");
+
+            // console.log("nome - ", nomeProduto);
+            // console.log("categoria - ", categoriaProduto);
+            // console.log("ordem - ", ordemProduto);
+
+            const numPage = parseInt(page as string);
+
+            // console.log("- ", req.query.page);
+            // console.log("- ", numPage);
+            
+            if (isNaN(numPage) || numPage <= 0) {
+                res.status(400).json({ message: "O parâmetro 'page' deve ser um número válido e maior que zero." });
+            }
+
+
+            const itemsPerPage = 10;
+
+            const produto = await this.produtoBusiness.getProdutoWithFilter(nomeProduto, categoriaProduto, ordemProduto, numPage, itemsPerPage);
 
             if (!produto) {
                 res.status(404).json({ message: 'Produto não encontrado' });

@@ -69,7 +69,7 @@ export class ProductData {
     //testar para ver se o codigo funciona so com 1 filtro
 
     // Método para buscar produtos com filtros (nome, categoria e ordem)
-    getProdutoWithFilter = async (nome_produto?: string, categoria_produto?: string, ordem?: string): Promise<Produto[]> => {
+    getProdutoWithFilter = async (offset: number, limit: number, nome_produto?: string, categoria_produto?: string, ordem?: string ): Promise<Produto[]> => {
         let query = connection('produto');
 
         // Filtro por nome
@@ -87,7 +87,11 @@ export class ProductData {
             query = query.orderBy('nome_produto', ordem.toLowerCase());
         }
 
-        const produtos = await query;
+        const produtos = await query
+        .select('*')  // Seleciona todas as colunas da tabela
+        .limit(limit)  // Limitando os resultados
+        .offset(offset);  // Definindo o deslocamento
+
         return produtos;
     };
 }

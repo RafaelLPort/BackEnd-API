@@ -32,6 +32,9 @@ export class UserController {
           // }x
     
           const user = await connection("cliente").where("email_cliente", email_cliente).first();
+
+          console.log("user: ",user);
+
           if (!user) {
             throw new Error("User not found.");
           }
@@ -40,9 +43,12 @@ export class UserController {
           if (!passwordMatch) {
             throw new Error("Invalid password.");
           }
-    
+          
+          console.log("id cliente UserController: ",user.id_cliente);
+
           const authenticator = new Authenticator();
-          const token = authenticator.generateToken({ id: user.id_user });
+          const token = authenticator.generateToken({ id: user.id_cliente });
+          console.log("id cliente UserController: ",token);
     
           res.status(200).json({ message: "Login successful", token });
         } catch (error: any) {
@@ -84,8 +90,8 @@ export class UserController {
 
 
 
-            console.log("ProdutoId recebido:", req.params.id_cliente);
-            console.log("ProdutoId recebido:", req.body.address);
+            console.log("id_cliente: ", req.params.id_cliente);
+            console.log("adress: ", req.body.address);
 
             if (!token) {
               throw new Error("Authorization token is required.");
@@ -93,6 +99,8 @@ export class UserController {
 
             const authenticator = new Authenticator();
             const tokenData = authenticator.getTokenData(token);
+
+            console.log("token id: ", tokenData.id);
             
             if (id_cliente !== tokenData.id) {
               throw new Error("You are not authorized to delete this user.");
